@@ -1,10 +1,11 @@
 Xvfb:     OK
-XFCE:     OK
-x11vnc:   OK
-websock:  OK
+XFCE:     FAIL
+x11vnc:   FAIL
+websock:  FAIL
+FIREFOX:  /usr/bin/firefox
 WEBROOT:  /opt/novnc
-5901:     LISTEN
-6080:     LISTEN
-RFB:      RFB 003.008
-http6080: 200
-rootcode: 200
+5901:     DOWN
+6080:     DOWN
+RFB:      EMPTY
+http6080: 000
+rootcode: 000
