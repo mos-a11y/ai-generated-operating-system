@@ -1,3 +1,4 @@
+LANG:     zh_CN.UTF-8
 Xvfb:     OK
 XFCE:     OK
 x11vnc:   OK
