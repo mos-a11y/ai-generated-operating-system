@@ -1,7 +1,9 @@
-Xvfb:    OK
-XFCE:    FAIL
-x11vnc:  OK
-websock: OK
-5901:    LISTEN
-6080:    LISTEN
-http6080:200
+Xvfb:     OK
+XFCE:     OK
+xterm:    NO
+x11vnc:   OK
+websock:  OK
+5901:     LISTEN
+6080:     LISTEN
+RFB:      RFB 003.008
+http6080: 200
