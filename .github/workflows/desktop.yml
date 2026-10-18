@@ -18,8 +18,10 @@ jobs:
           set +e
           sudo apt-get update -qq
           sudo apt-get install -y -qq \
+            locales language-pack-zh-hans fonts-wqy-microhei fonts-wqy-zenhei \
             xvfb x11vnc xfce4 xfce4-goodies xterm novnc websockify \
             netcat-openbsd curl dbus-x11
+          sudo locale-gen zh_CN.UTF-8 2>&1 | tail -2
           mkdir -p .vm-output
           sudo rm -rf /opt/novnc
           (sudo git clone --depth 1 https://github.com/novnc/noVNC.git /opt/novnc) > /dev/null 2>&1
@@ -36,6 +38,9 @@ jobs:
         run: |
           set +e
           mkdir -p .vm-output
+          export LANG=zh_CN.UTF-8
+          export LC_ALL=zh_CN.UTF-8
+          export LANGUAGE=zh_CN:zh
           export DISPLAY=:1
           setsid nohup Xvfb :1 -screen 0 1280x800x24 > /tmp/xvfb.log 2>&1 < /dev/null &
           sleep 4
@@ -60,6 +65,8 @@ jobs:
           sleep 5
           RFB=$(timeout 5 bash -c 'exec 3<>/dev/tcp/127.0.0.1/5901; head -c 12 <&3' 2>/dev/null | tr -cd '[:print:]')
           {
+            echo "LANG:     ${LANG:-unset}"
+
             echo "Xvfb:     $(pgrep -f 'Xvfb :1' >/dev/null && echo OK || echo FAIL)"
             echo "XFCE:     $(pgrep -f 'xfdesktop|xfwm4|xfce4-session' >/dev/null && echo OK || echo FAIL)"
             echo "x11vnc:   $(pgrep -f x11vnc >/dev/null && echo OK || echo FAIL)"
