@@ -13,15 +13,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install desktop stack
+      - name: Install desktop stack + browser
         run: |
           set +e
           sudo apt-get update -qq
           sudo apt-get install -y -qq \
-            xvfb x11vnc xfce4 xfce4-goodies xterm novnc websockify netcat-openbsd curl dbus-x11
+            xvfb x11vnc xfce4 xfce4-goodies xterm novnc websockify \
+            netcat-openbsd curl dbus-x11 firefox-esr
+          # 若 firefox-esr 装不上，退回系统自带 firefox
+          command -v firefox-esr > /dev/null || command -v firefox > /dev/null || \
+            sudo apt-get install -y -qq firefox
           mkdir -p .vm-output
 
-          # 尝试下载官方 noVNC（失败也不要紧，有 apt 版兜底）
           sudo rm -rf /opt/novnc
           (sudo git clone --depth 1 https://github.com/novnc/noVNC.git /opt/novnc) > /dev/null 2>&1
           if [ ! -f /opt/novnc/vnc.html ]; then
@@ -30,13 +33,6 @@ jobs:
             sudo tar xzf /tmp/nv.tgz -C /opt/novnc --strip-components=1 > /dev/null 2>&1
           fi
           sudo chmod -R 755 /opt/novnc 2>/dev/null
-
-          # 决定 web 根目录：优先官方 noVNC，否则 apt 的
-          WEBROOT=""
-          if [ -f /opt/novnc/vnc.html ]; then WEBROOT=/opt/novnc
-          elif [ -f /usr/share/novnc/vnc.html ]; then WEBROOT=/usr/share/novnc
-          fi
-          echo "WEBROOT=$WEBROOT" >> .vm-output/diag.txt
           echo "installed" >> .vm-output/diag.txt
           exit 0
 
@@ -59,6 +55,57 @@ jobs:
             setsid nohup xterm -geometry 100x30 > /tmp/xterm.log 2>&1 < /dev/null &
             sleep 3
           }
+
+          # === 在桌面放显眼图标：浏览器 / 终端 / 文件管理器 ===
+          mkdir -p "$HOME/Desktop"
+          FIREFOX=""
+          command -v firefox-esr > /dev/null && FIREFOX=$(command -v firefox-esr)
+          [ -z "$FIREFOX" ] && command -v firefox > /dev/null && FIREFOX=$(command -v firefox)
+          [ -z "$FIREFOX" ] && [ -f /usr/lib/firefox-esr/firefox-esr ] && FIREFOX=/usr/lib/firefox-esr/firefox-esr
+          [ -z "$FIREFOX" ] && [ -f /snap/bin/firefox ] && FIREFOX=/snap/bin/firefox
+
+          cat > "$HOME/Desktop/浏览器.desktop" <<DEOF
+          [Desktop Entry]
+          Version=1.0
+          Type=Application
+          Name=浏览器
+          Name[zh_CN]=浏览器
+          Comment=Firefox 网页浏览器
+          Exec=${FIREFOX:-firefox}
+          Icon=firefox-esr
+          Terminal=false
+          Categories=Network;
+          DEOF
+
+          cat > "$HOME/Desktop/终端.desktop" <<DEOF
+          [Desktop Entry]
+          Version=1.0
+          Type=Application
+          Name=终端
+          Name[zh_CN]=终端
+          Exec=xfce4-terminal
+          Icon=utilities-terminal
+          Terminal=false
+          Categories=System;
+          DEOF
+
+          cat > "$HOME/Desktop/文件管理器.desktop" <<DEOF
+          [Desktop Entry]
+          Version=1.0
+          Type=Application
+          Name=文件管理器
+          Name[zh_CN]=文件管理器
+          Exec=thunar
+          Icon=org.xfce.thunar
+          Terminal=false
+          Categories=System;
+          DEOF
+
+          chmod +x "$HOME/Desktop"/*.desktop
+          # 允许 XFCE 信任并直接启动桌面图标
+          gio set "$HOME/Desktop"/*.desktop metadata::xfce-exe-checksum "*" 2>/dev/null || true
+          xfce4-panel --restart > /dev/null 2>&1 || true
+
           mkdir -p "$HOME/.vnc"
           x11vnc -storepasswd 123456 "$HOME/.vnc/passwd" > /dev/null 2>&1
           setsid nohup x11vnc -display :1 -forever -shared -rfbauth "$HOME/.vnc/passwd" \
@@ -79,6 +126,7 @@ jobs:
             echo "XFCE:     $(pgrep -f 'xfdesktop|xfwm4|xfce4-session' >/dev/null && echo OK || echo FAIL)"
             echo "x11vnc:   $(pgrep -f x11vnc >/dev/null && echo OK || echo FAIL)"
             echo "websock:  $(pgrep -f websockify >/dev/null && echo OK || echo FAIL)"
+            echo "FIREFOX:  ${FIREFOX:-NONE}"
             echo "WEBROOT:  ${WEBROOT:-NONE}"
             echo "5901:     $(nc -z -w2 127.0.0.1 5901 && echo LISTEN || echo DOWN)"
             echo "6080:     $(nc -z -w2 127.0.0.1 6080 && echo LISTEN || echo DOWN)"
@@ -121,11 +169,11 @@ jobs:
           set +e
           git config user.name "cloud-desktop"
           git config user.email "desktop@users.noreply.github.com"
-          git add -f .vm-output/ 
+          git add -f .vm-output/
           git diff --staged --quiet || git commit -m "desktop status"
           for i in 1 2 3; do git push && break || sleep 3; done
           exit 0
 
       - name: Keep alive
         run: |
-          for i in $(seq 1 340); do sleep 60; done
+          for i in $(seq 1 170); do sleep 60; done
