@@ -17,21 +17,25 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq \
-            xvfb x11vnc xfce4 xfce4-goodies xterm novnc websockify netcat-openbsd curl dbus-x11
+            xvfb x11vnc xfce4 xfce4-goodies xterm websockify netcat-openbsd curl dbus-x11 python3-websockify
           mkdir -p .vm-output
+          # 直接下载官方 noVNC（比 apt 包可靠，保证有 vnc.html 且能被 websockify 当根目录）
+          sudo rm -rf /opt/novnc
+          sudo git clone --depth 1 https://github.com/novnc/noVNC.git /opt/novnc 2>/dev/null || \
+            curl -sL https://github.com/novnc/noVNC/archive/refs/heads/master.tar.gz -o /tmp/nv.tgz && \
+            sudo mkdir -p /opt/novnc && sudo tar xzf /tmp/nv.tgz -C /opt/novnc --strip-components=1
+          sudo chmod -R 755 /opt/novnc
+          ls /opt/novnc/vnc.html > /dev/null && echo "novnc: OK" || echo "novnc: MISSING"
           echo "installed" > .vm-output/diag.txt
 
       - name: Start Xvfb + XFCE + x11vnc + websockify
         run: |
           mkdir -p .vm-output
           export DISPLAY=:1
-          # 1) 虚拟显示器
           setsid nohup Xvfb :1 -screen 0 1280x800x24 > /tmp/xvfb.log 2>&1 < /dev/null &
           sleep 4
-          # 2) dbus（XFCE 强依赖，缺了就起不来）
           dbus-daemon --session --address=unix:path=/tmp/dbus-sock --fork --print-address > /dev/null 2>&1 || true
           export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/dbus-sock
-          # 3) 桌面环境（多退一步：xfce4-session 失败就用 startxfce4，再失败就 xterm）
           setsid nohup dbus-launch --exit-with-session xfce4-session > /tmp/xfce.log 2>&1 < /dev/null &
           sleep 12
           if ! pgrep -f "xfce4-session|xfdesktop|xfwm4" > /dev/null; then
@@ -42,33 +46,30 @@ jobs:
             setsid nohup xterm -geometry 100x30 > /tmp/xterm.log 2>&1 < /dev/null &
             sleep 3
           fi
-          # 4) VNC
           mkdir -p "$HOME/.vnc"
           x11vnc -storepasswd 123456 "$HOME/.vnc/passwd" > /dev/null 2>&1
           setsid nohup x11vnc -display :1 -forever -shared -rfbauth "$HOME/.vnc/passwd" \
             -rfbport 5901 -noxdamage -threads > /tmp/x11vnc.log 2>&1 < /dev/null &
           sleep 5
-          # 5) WebSocket 桥接
-          WEBDIR=/usr/share/novnc
-          [ -d "$WEBDIR" ] || WEBDIR=""
-          if [ -n "$WEBDIR" ]; then
-            setsid nohup websockify --web="$WEBDIR" --heartbeat 30 6080 localhost:5901 > /tmp/ws.log 2>&1 < /dev/null &
+          # 用 noVNC 目录当 web 根，这样打开根路径就是 vnc.html，不会再出现目录列表
+          if [ -f /opt/novnc/vnc.html ]; then
+            setsid nohup websockify --web=/opt/novnc --heartbeat 30 6080 localhost:5901 > /tmp/ws.log 2>&1 < /dev/null &
           else
             setsid nohup websockify --heartbeat 30 6080 localhost:5901 > /tmp/ws.log 2>&1 < /dev/null &
           fi
           sleep 5
-          # 6) 诊断（含 RFB 握手是否真的响应）
-          RFB=$(timeout 5 bash -c 'exec 3<>/dev/tcp/127.0.0.1/5901; head -c 12 <&3' 2>/dev/null | tr -d '\0' | tr -cd '[:print:]')
+          RFB=$(timeout 5 bash -c 'exec 3<>/dev/tcp/127.0.0.1/5901; head -c 12 <&3' 2>/dev/null | tr -cd '[:print:]')
           {
             echo "Xvfb:     $(pgrep -f 'Xvfb :1' >/dev/null && echo OK || echo FAIL)"
             echo "XFCE:     $(pgrep -f 'xfdesktop|xfwm4|xfce4-session' >/dev/null && echo OK || echo FAIL)"
-            echo "xterm:    $(pgrep -f xterm >/dev/null && echo OK || echo NO)"
             echo "x11vnc:   $(pgrep -f x11vnc >/dev/null && echo OK || echo FAIL)"
             echo "websock:  $(pgrep -f websockify >/dev/null && echo OK || echo FAIL)"
+            echo "novncHTML:$([ -f /opt/novnc/vnc.html ] && echo OK || echo MISSING)"
             echo "5901:     $(nc -z -w2 127.0.0.1 5901 && echo LISTEN || echo DOWN)"
             echo "6080:     $(nc -z -w2 127.0.0.1 6080 && echo LISTEN || echo DOWN)"
             echo "RFB:      ${RFB:-EMPTY}"
             echo "http6080: $(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:6080/vnc.html)"
+            echo "rootcode: $(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:6080/)"
           } > .vm-output/diag.txt
           cat .vm-output/diag.txt
 
