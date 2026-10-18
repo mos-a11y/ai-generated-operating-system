@@ -15,45 +15,60 @@ jobs:
 
       - name: Install desktop stack
         run: |
+          set +e
           sudo apt-get update -qq
           sudo apt-get install -y -qq \
-            xvfb x11vnc xfce4 xfce4-goodies xterm websockify netcat-openbsd curl dbus-x11 python3-websockify
+            xvfb x11vnc xfce4 xfce4-goodies xterm novnc websockify netcat-openbsd curl dbus-x11
           mkdir -p .vm-output
-          # 直接下载官方 noVNC（比 apt 包可靠，保证有 vnc.html 且能被 websockify 当根目录）
+
+          # 尝试下载官方 noVNC（失败也不要紧，有 apt 版兜底）
           sudo rm -rf /opt/novnc
-          sudo git clone --depth 1 https://github.com/novnc/noVNC.git /opt/novnc 2>/dev/null || \
-            curl -sL https://github.com/novnc/noVNC/archive/refs/heads/master.tar.gz -o /tmp/nv.tgz && \
-            sudo mkdir -p /opt/novnc && sudo tar xzf /tmp/nv.tgz -C /opt/novnc --strip-components=1
-          sudo chmod -R 755 /opt/novnc
-          ls /opt/novnc/vnc.html > /dev/null && echo "novnc: OK" || echo "novnc: MISSING"
-          echo "installed" > .vm-output/diag.txt
+          (sudo git clone --depth 1 https://github.com/novnc/noVNC.git /opt/novnc) > /dev/null 2>&1
+          if [ ! -f /opt/novnc/vnc.html ]; then
+            curl -sL https://github.com/novnc/noVNC/archive/refs/heads/master.tar.gz -o /tmp/nv.tgz > /dev/null 2>&1
+            sudo mkdir -p /opt/novnc
+            sudo tar xzf /tmp/nv.tgz -C /opt/novnc --strip-components=1 > /dev/null 2>&1
+          fi
+          sudo chmod -R 755 /opt/novnc 2>/dev/null
+
+          # 决定 web 根目录：优先官方 noVNC，否则 apt 的
+          WEBROOT=""
+          if [ -f /opt/novnc/vnc.html ]; then WEBROOT=/opt/novnc
+          elif [ -f /usr/share/novnc/vnc.html ]; then WEBROOT=/usr/share/novnc
+          fi
+          echo "WEBROOT=$WEBROOT" >> .vm-output/diag.txt
+          echo "installed" >> .vm-output/diag.txt
+          exit 0
 
       - name: Start Xvfb + XFCE + x11vnc + websockify
         run: |
+          set +e
           mkdir -p .vm-output
           export DISPLAY=:1
           setsid nohup Xvfb :1 -screen 0 1280x800x24 > /tmp/xvfb.log 2>&1 < /dev/null &
           sleep 4
-          dbus-daemon --session --address=unix:path=/tmp/dbus-sock --fork --print-address > /dev/null 2>&1 || true
+          dbus-daemon --session --address=unix:path=/tmp/dbus-sock --fork --print-address > /dev/null 2>&1
           export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/dbus-sock
           setsid nohup dbus-launch --exit-with-session xfce4-session > /tmp/xfce.log 2>&1 < /dev/null &
           sleep 12
-          if ! pgrep -f "xfce4-session|xfdesktop|xfwm4" > /dev/null; then
+          pgrep -f "xfdesktop|xfwm4|xfce4-session" > /dev/null || {
             setsid nohup startxfce4 > /tmp/xfce2.log 2>&1 < /dev/null &
             sleep 10
-          fi
-          if ! pgrep -f "xfdesktop|xfwm4" > /dev/null; then
+          }
+          pgrep -f "xfdesktop|xfwm4" > /dev/null || {
             setsid nohup xterm -geometry 100x30 > /tmp/xterm.log 2>&1 < /dev/null &
             sleep 3
-          fi
+          }
           mkdir -p "$HOME/.vnc"
           x11vnc -storepasswd 123456 "$HOME/.vnc/passwd" > /dev/null 2>&1
           setsid nohup x11vnc -display :1 -forever -shared -rfbauth "$HOME/.vnc/passwd" \
             -rfbport 5901 -noxdamage -threads > /tmp/x11vnc.log 2>&1 < /dev/null &
           sleep 5
-          # 用 noVNC 目录当 web 根，这样打开根路径就是 vnc.html，不会再出现目录列表
-          if [ -f /opt/novnc/vnc.html ]; then
-            setsid nohup websockify --web=/opt/novnc --heartbeat 30 6080 localhost:5901 > /tmp/ws.log 2>&1 < /dev/null &
+          WEBROOT=""
+          [ -f /opt/novnc/vnc.html ] && WEBROOT=/opt/novnc
+          [ -z "$WEBROOT" ] && [ -f /usr/share/novnc/vnc.html ] && WEBROOT=/usr/share/novnc
+          if [ -n "$WEBROOT" ]; then
+            setsid nohup websockify --web="$WEBROOT" --heartbeat 30 6080 localhost:5901 > /tmp/ws.log 2>&1 < /dev/null &
           else
             setsid nohup websockify --heartbeat 30 6080 localhost:5901 > /tmp/ws.log 2>&1 < /dev/null &
           fi
@@ -64,7 +79,7 @@ jobs:
             echo "XFCE:     $(pgrep -f 'xfdesktop|xfwm4|xfce4-session' >/dev/null && echo OK || echo FAIL)"
             echo "x11vnc:   $(pgrep -f x11vnc >/dev/null && echo OK || echo FAIL)"
             echo "websock:  $(pgrep -f websockify >/dev/null && echo OK || echo FAIL)"
-            echo "novncHTML:$([ -f /opt/novnc/vnc.html ] && echo OK || echo MISSING)"
+            echo "WEBROOT:  ${WEBROOT:-NONE}"
             echo "5901:     $(nc -z -w2 127.0.0.1 5901 && echo LISTEN || echo DOWN)"
             echo "6080:     $(nc -z -w2 127.0.0.1 6080 && echo LISTEN || echo DOWN)"
             echo "RFB:      ${RFB:-EMPTY}"
@@ -72,33 +87,41 @@ jobs:
             echo "rootcode: $(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:6080/)"
           } > .vm-output/diag.txt
           cat .vm-output/diag.txt
+          exit 0
 
       - name: Expose via cloudflared tunnel
         run: |
+          set +e
           mkdir -p .vm-output
           echo "" > .vm-output/desktop-url.txt
-          curl -sL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o /tmp/cf || true
-          chmod +x /tmp/cf 2>/dev/null || true
+          curl -sL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o /tmp/cf > /dev/null 2>&1
+          chmod +x /tmp/cf 2>/dev/null
           if [ -s /tmp/cf ]; then
             setsid nohup /tmp/cf tunnel --url http://localhost:6080 --no-autoupdate > /tmp/cf.log 2>&1 < /dev/null &
-            sleep 30
-            URL=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' /tmp/cf.log | head -1)
-            echo "$URL" > .vm-output/desktop-url.txt
+            for i in $(seq 1 20); do
+              sleep 3
+              URL=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' /tmp/cf.log 2>/dev/null | head -1)
+              [ -n "$URL" ] && break
+            done
+            [ -n "$URL" ] && echo "$URL" > .vm-output/desktop-url.txt
           fi
           if [ ! -s .vm-output/desktop-url.txt ]; then
             nohup ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 \
               -R 80:localhost:6080 serveo.net > /tmp/sv.log 2>&1 &
             sleep 20
-            URL=$(grep -oE 'https://[a-z0-9]+\.serveo\.net' /tmp/sv.log | head -1)
-            echo "$URL" > .vm-output/desktop-url.txt
+            URL2=$(grep -oE 'https://[a-z0-9]+\.serveo\.net' /tmp/sv.log 2>/dev/null | head -1)
+            [ -n "$URL2" ] && echo "$URL2" > .vm-output/desktop-url.txt
           fi
           [ -s .vm-output/desktop-url.txt ] || echo "TUNNEL_FAILED" > .vm-output/desktop-url.txt
+          echo "URL=$(cat .vm-output/desktop-url.txt)"
+          exit 0
 
       - name: Commit status
         run: |
+          set +e
           git config user.name "cloud-desktop"
           git config user.email "desktop@users.noreply.github.com"
-          git add -f .vm-output/ || true
+          git add -f .vm-output/ 
           git diff --staged --quiet || git commit -m "desktop status"
           for i in 1 2 3; do git push && break || sleep 3; done
           exit 0
