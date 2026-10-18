@@ -17,43 +17,58 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq \
-            xvfb x11vnc xfce4 xfce4-goodies novnc websockify netcat-openbsd curl
+            xvfb x11vnc xfce4 xfce4-goodies xterm novnc websockify netcat-openbsd curl dbus-x11
           mkdir -p .vm-output
           echo "installed" > .vm-output/diag.txt
 
       - name: Start Xvfb + XFCE + x11vnc + websockify
         run: |
           mkdir -p .vm-output
+          export DISPLAY=:1
           # 1) 虚拟显示器
           setsid nohup Xvfb :1 -screen 0 1280x800x24 > /tmp/xvfb.log 2>&1 < /dev/null &
           sleep 4
-          # 2) 桌面环境
-          DISPLAY=:1 setsid nohup startxfce4 > /tmp/xfce.log 2>&1 < /dev/null &
-          sleep 8
-          # 3) VNC 服务（x11vnc 比 tigervnc 稳，且直接共享真实 DISPLAY）
+          # 2) dbus（XFCE 强依赖，缺了就起不来）
+          dbus-daemon --session --address=unix:path=/tmp/dbus-sock --fork --print-address > /dev/null 2>&1 || true
+          export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/dbus-sock
+          # 3) 桌面环境（多退一步：xfce4-session 失败就用 startxfce4，再失败就 xterm）
+          setsid nohup dbus-launch --exit-with-session xfce4-session > /tmp/xfce.log 2>&1 < /dev/null &
+          sleep 12
+          if ! pgrep -f "xfce4-session|xfdesktop|xfwm4" > /dev/null; then
+            setsid nohup startxfce4 > /tmp/xfce2.log 2>&1 < /dev/null &
+            sleep 10
+          fi
+          if ! pgrep -f "xfdesktop|xfwm4" > /dev/null; then
+            setsid nohup xterm -geometry 100x30 > /tmp/xterm.log 2>&1 < /dev/null &
+            sleep 3
+          fi
+          # 4) VNC
           mkdir -p "$HOME/.vnc"
           x11vnc -storepasswd 123456 "$HOME/.vnc/passwd" > /dev/null 2>&1
           setsid nohup x11vnc -display :1 -forever -shared -rfbauth "$HOME/.vnc/passwd" \
-            -rfbport 5901 -noxdamage > /tmp/x11vnc.log 2>&1 < /dev/null &
+            -rfbport 5901 -noxdamage -threads > /tmp/x11vnc.log 2>&1 < /dev/null &
           sleep 5
-          # 4) WebSocket 桥接（noVNC 走它）
+          # 5) WebSocket 桥接
           WEBDIR=/usr/share/novnc
           [ -d "$WEBDIR" ] || WEBDIR=""
           if [ -n "$WEBDIR" ]; then
-            setsid nohup websockify --web="$WEBDIR" 6080 localhost:5901 > /tmp/ws.log 2>&1 < /dev/null &
+            setsid nohup websockify --web="$WEBDIR" --heartbeat 30 6080 localhost:5901 > /tmp/ws.log 2>&1 < /dev/null &
           else
-            setsid nohup websockify 6080 localhost:5901 > /tmp/ws.log 2>&1 < /dev/null &
+            setsid nohup websockify --heartbeat 30 6080 localhost:5901 > /tmp/ws.log 2>&1 < /dev/null &
           fi
           sleep 5
-          # 5) 健康检查写入诊断文件
+          # 6) 诊断（含 RFB 握手是否真的响应）
+          RFB=$(timeout 5 bash -c 'exec 3<>/dev/tcp/127.0.0.1/5901; head -c 12 <&3' 2>/dev/null | tr -d '\0' | tr -cd '[:print:]')
           {
-            echo "Xvfb:    $(pgrep -f 'Xvfb :1' >/dev/null && echo OK || echo FAIL)"
-            echo "XFCE:    $(pgrep -f startxfce4 >/dev/null && echo OK || echo FAIL)"
-            echo "x11vnc:  $(pgrep -f x11vnc >/dev/null && echo OK || echo FAIL)"
-            echo "websock: $(pgrep -f websockify >/dev/null && echo OK || echo FAIL)"
-            echo "5901:    $(nc -z -w2 127.0.0.1 5901 && echo LISTEN || echo DOWN)"
-            echo "6080:    $(nc -z -w2 127.0.0.1 6080 && echo LISTEN || echo DOWN)"
-            echo "http6080:$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:6080/vnc.html)"
+            echo "Xvfb:     $(pgrep -f 'Xvfb :1' >/dev/null && echo OK || echo FAIL)"
+            echo "XFCE:     $(pgrep -f 'xfdesktop|xfwm4|xfce4-session' >/dev/null && echo OK || echo FAIL)"
+            echo "xterm:    $(pgrep -f xterm >/dev/null && echo OK || echo NO)"
+            echo "x11vnc:   $(pgrep -f x11vnc >/dev/null && echo OK || echo FAIL)"
+            echo "websock:  $(pgrep -f websockify >/dev/null && echo OK || echo FAIL)"
+            echo "5901:     $(nc -z -w2 127.0.0.1 5901 && echo LISTEN || echo DOWN)"
+            echo "6080:     $(nc -z -w2 127.0.0.1 6080 && echo LISTEN || echo DOWN)"
+            echo "RFB:      ${RFB:-EMPTY}"
+            echo "http6080: $(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:6080/vnc.html)"
           } > .vm-output/diag.txt
           cat .vm-output/diag.txt
 
@@ -77,25 +92,16 @@ jobs:
             echo "$URL" > .vm-output/desktop-url.txt
           fi
           [ -s .vm-output/desktop-url.txt ] || echo "TUNNEL_FAILED" > .vm-output/desktop-url.txt
-          echo "URL=$(cat .vm-output/desktop-url.txt)"
 
       - name: Commit status
         run: |
           git config user.name "cloud-desktop"
           git config user.email "desktop@users.noreply.github.com"
-          git add -f .vm-output/desktop-url.txt .vm-output/diag.txt 2>/dev/null || true
+          git add -f .vm-output/ || true
           git diff --staged --quiet || git commit -m "desktop status"
           for i in 1 2 3; do git push && break || sleep 3; done
           exit 0
 
       - name: Keep alive
         run: |
-          # 每 60 秒刷新一次诊断，方便排查
-          for i in $(seq 1 340); do
-            {
-              echo "tick $i"
-              echo "5901: $(nc -z -w2 127.0.0.1 5901 && echo LISTEN || echo DOWN)"
-              echo "6080: $(nc -z -w2 127.0.0.1 6080 && echo LISTEN || echo DOWN)"
-            } > /tmp/beat.txt
-            sleep 60
-          done
+          for i in $(seq 1 340); do sleep 60; done
