@@ -1,19 +1,11 @@
 {
-  "name": "云电脑",
+  "name": "cloud-pc",
   "forwardPorts": [7681],
-  "postStartCommand": "bash .vm/start.sh",
   "portsAttributes": {
     "7681": {
-      "label": "云电脑终端",
+      "label": "cloud-terminal",
       "visibility": "public",
       "onAutoForward": "silent"
-    }
-  },
-  "customizations": {
-    "vscode": {
-      "settings": {
-        "terminal.integrated.defaultProfile.linux": "bash"
-      }
     }
   }
 }
