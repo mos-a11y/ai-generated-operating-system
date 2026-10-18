@@ -13,17 +13,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install desktop stack + Chinese
+      - name: Install core desktop (keep it small and fast)
         run: |
           set +e
           sudo apt-get update -qq
-          sudo apt-get install -y -qq locales
-          sudo locale-gen zh_CN.UTF-8
-          sudo update-locale LANG=zh_CN.UTF-8
           sudo apt-get install -y -qq \
-            language-pack-zh-hans language-pack-gnome-zh-hans \
-            fonts-wqy-zenhei fonts-wqy-microhei fonts-arphic-ukai \
-            xfce4-l10n thunar-l10n \
             xvfb x11vnc xfce4 xfce4-goodies xterm novnc websockify \
             netcat-openbsd curl dbus-x11
           mkdir -p .vm-output
@@ -38,28 +32,11 @@ jobs:
           echo "installed" > .vm-output/diag.txt
           exit 0
 
-      - name: Install Firefox (optional, non-fatal)
-        run: |
-          set +e
-          # Ubuntu 的 apt firefox 是 snap 壳，在容器里打不开；改用 Mozilla 官方中文版
-          sudo rm -rf /opt/firefox
-          timeout 180 curl -sL "https://download.mozilla.org/?product=firefox-latest&os=linux64&lang=zh-CN" -o /tmp/ff.tar.xz
-          if [ -s /tmp/ff.tar.xz ]; then
-            sudo mkdir -p /opt
-            sudo tar xJf /tmp/ff.tar.xz -C /opt/ > /dev/null 2>&1
-          fi
-          ls /opt/firefox/firefox > /dev/null 2>&1 && echo "FF=OK" || echo "FF=MISSING"
-          exit 0
-
       - name: Start Xvfb + XFCE + x11vnc + websockify
         run: |
           set +e
           mkdir -p .vm-output
-          export LANG=zh_CN.UTF-8
-          export LC_ALL=zh_CN.UTF-8
-          export LANGUAGE=zh_CN:zh
           export DISPLAY=:1
-          # 分辨率调小，手机上不用划来划去
           setsid nohup Xvfb :1 -screen 0 1280x800x24 > /tmp/xvfb.log 2>&1 < /dev/null &
           sleep 4
           dbus-daemon --session --address=unix:path=/tmp/dbus-sock --fork --print-address > /dev/null 2>&1
@@ -68,18 +45,6 @@ jobs:
           sleep 12
           pgrep -f "xfdesktop|xfwm4|xfce4-session" > /dev/null || { setsid nohup startxfce4 > /tmp/xfce2.log 2>&1 < /dev/null & sleep 10; }
           pgrep -f "xfdesktop|xfwm4" > /dev/null || { setsid nohup xterm -geometry 100x30 > /tmp/xterm.log 2>&1 < /dev/null & sleep 3; }
-
-          mkdir -p "$HOME/Desktop"
-          chmod +x "$HOME/Desktop" 2>/dev/null
-          FF=""
-          [ -x /opt/firefox/firefox ] && FF=/opt/firefox/firefox
-          [ -z "$FF" ] && [ -x /usr/bin/firefox ] && FF=/usr/bin/firefox
-          printf '[Desktop Entry]\nVersion=1.0\nType=Application\nName=Firefox\nName[zh_CN]=Firefox\nExec=%s\nIcon=firefox\nTerminal=false\nCategories=Network;\n' "${FF:-firefox}" > "$HOME/Desktop/firefox.desktop"
-          printf '[Desktop Entry]\nVersion=1.0\nType=Application\nName=Terminal\nName[zh_CN]=Terminal\nExec=xfce4-terminal\nIcon=utilities-terminal\nTerminal=false\nCategories=System;\n' > "$HOME/Desktop/terminal.desktop"
-          printf '[Desktop Entry]\nVersion=1.0\nType=Application\nName=Files\nName[zh_CN]=Files\nExec=thunar\nIcon=org.xfce.thunar\nTerminal=false\nCategories=System;\n' > "$HOME/Desktop/files.desktop"
-          chmod 755 "$HOME/Desktop"/*.desktop
-          gio set "$HOME/Desktop"/*.desktop metadata::xfce-exe-checksum "*" 2>/dev/null
-
           mkdir -p "$HOME/.vnc"
           x11vnc -storepasswd 123456 "$HOME/.vnc/passwd" > /dev/null 2>&1
           setsid nohup x11vnc -display :1 -forever -shared -rfbauth "$HOME/.vnc/passwd" -rfbport 5901 -noxdamage -threads > /tmp/x11vnc.log 2>&1 < /dev/null &
@@ -95,12 +60,10 @@ jobs:
           sleep 5
           RFB=$(timeout 5 bash -c 'exec 3<>/dev/tcp/127.0.0.1/5901; head -c 12 <&3' 2>/dev/null | tr -cd '[:print:]')
           {
-            echo "LANG:     ${LANG}"
             echo "Xvfb:     $(pgrep -f 'Xvfb :1' >/dev/null && echo OK || echo FAIL)"
             echo "XFCE:     $(pgrep -f 'xfdesktop|xfwm4|xfce4-session' >/dev/null && echo OK || echo FAIL)"
             echo "x11vnc:   $(pgrep -f x11vnc >/dev/null && echo OK || echo FAIL)"
             echo "websock:  $(pgrep -f websockify >/dev/null && echo OK || echo FAIL)"
-            echo "FIREFOX:  ${FF:-NONE}"
             echo "WEBROOT:  ${WEBROOT:-NONE}"
             echo "5901:     $(nc -z -w2 127.0.0.1 5901 && echo LISTEN || echo DOWN)"
             echo "6080:     $(nc -z -w2 127.0.0.1 6080 && echo LISTEN || echo DOWN)"
@@ -145,6 +108,36 @@ jobs:
           git add -f .vm-output/
           git diff --staged --quiet || git commit -m "desktop status"
           for i in 1 2 3; do git push && break || sleep 3; done
+          exit 0
+
+      - name: Install Chinese + Firefox in background (non-blocking)
+        run: |
+          set +e
+          {
+            export DEBIAN_FRONTEND=noninteractive
+            sudo apt-get install -y -qq locales language-pack-zh-hans \
+              fonts-wqy-zenhei fonts-wqy-microhei xfce4-l10n thunar-l10n 2>&1 | tail -3
+            sudo locale-gen zh_CN.UTF-8 2>&1 | tail -2
+            # Firefox 官方中文版（apt 的是 snap 壳，容器里打不开）
+            sudo rm -rf /opt/firefox
+            timeout 240 curl -sL "https://download.mozilla.org/?product=firefox-latest&os=linux64&lang=zh-CN" -o /tmp/ff.tar.xz
+            if [ -s /tmp/ff.tar.xz ]; then
+              sudo mkdir -p /opt
+              sudo tar xJf /tmp/ff.tar.xz -C /opt/ 2>&1 | tail -2
+            fi
+            # 桌面图标
+            mkdir -p "$HOME/Desktop"
+            FF=""
+            [ -x /opt/firefox/firefox ] && FF=/opt/firefox/firefox
+            [ -z "$FF" ] && [ -x /usr/bin/firefox ] && FF=/usr/bin/firefox
+            printf '[Desktop Entry]\nVersion=1.0\nType=Application\nName=Firefox\nName[zh_CN]=Firefox\nExec=%s\nIcon=firefox\nTerminal=false\nCategories=Network;\n' "${FF:-firefox}" > "$HOME/Desktop/firefox.desktop"
+            printf '[Desktop Entry]\nVersion=1.0\nType=Application\nName=Terminal\nName[zh_CN]=Terminal\nExec=xfce4-terminal\nIcon=utilities-terminal\nTerminal=false\nCategories=System;\n' > "$HOME/Desktop/terminal.desktop"
+            printf '[Desktop Entry]\nVersion=1.0\nType=Application\nName=Files\nName[zh_CN]=Files\nExec=thunar\nIcon=org.xfce.thunar\nTerminal=false\nCategories=System;\n' > "$HOME/Desktop/files.desktop"
+            chmod 755 "$HOME/Desktop"/*.desktop
+            gio set "$HOME/Desktop"/*.desktop metadata::xfce-exe-checksum "*" 2>/dev/null
+            echo "EXTRA_DONE FF=${FF:-NONE}"
+          } > /tmp/extra.log 2>&1
+          cat /tmp/extra.log | tail -20
           exit 0
 
       - name: Keep alive
