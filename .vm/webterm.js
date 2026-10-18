@@ -56,7 +56,16 @@ inp.addEventListener('keydown',function(e){
 });
 inp.focus();
 scr.addEventListener('click',function(){inp.focus()});
+/* 通知父页面：终端已真正加载并就绪（父页面用它判断嵌入成功与否） */
+try{ if(window.parent!==window) window.parent.postMessage({type:'VM_TERM_READY'},'*'); }catch(e){}
 connect();
+/* 连上 ws 后再报一次，带时间戳 */
+var _t=setInterval(function(){
+  if(ws&&ws.readyState===1){
+    try{ if(window.parent!==window) window.parent.postMessage({type:'VM_TERM_READY',ws:true},'*'); }catch(e){}
+    clearInterval(_t);
+  }
+},500);
 </script></body></html>`;
 
 function handshake(req, key) {
@@ -97,8 +106,23 @@ const server = http.createServer(function (req, res) {
     res.end(PAGE); return;
   }
   if (u === '/health') {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.writeHead(200, { 'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*' });
     res.end('{"ok":true}'); return;
+  }
+  /* script 标签探测专用：返回可执行 JS，只有真正的服务才会执行成功 */
+  if (u === '/health.js') {
+    res.writeHead(200, { 'Content-Type': 'application/javascript',
+      'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' });
+    res.end('window.__VM_HEALTH__=1;'); return;
+  }
+  if (u === '/pixel.png') {
+    res.writeHead(200, { 'Content-Type': 'image/png',
+      'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' });
+    res.end(Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+      'base64'));
+    return;
   }
   res.writeHead(404); res.end('not found');
 });
