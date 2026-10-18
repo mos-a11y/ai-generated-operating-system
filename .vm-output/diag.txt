@@ -1,9 +1,10 @@
 Xvfb:     OK
 XFCE:     OK
-xterm:    NO
 x11vnc:   OK
 websock:  OK
+WEBROOT:  /opt/novnc
 5901:     LISTEN
 6080:     LISTEN
 RFB:      RFB 003.008
 http6080: 200
+rootcode: 200
