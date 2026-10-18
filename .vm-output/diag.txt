@@ -2,7 +2,6 @@ Xvfb:     OK
 XFCE:     OK
 x11vnc:   OK
 websock:  OK
-FIREFOX:  /usr/bin/firefox
 WEBROOT:  /opt/novnc
 5901:     LISTEN
 6080:     LISTEN
