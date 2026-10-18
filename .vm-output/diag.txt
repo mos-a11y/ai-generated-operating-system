@@ -1,0 +1,7 @@
+Xvfb:    OK
+XFCE:    FAIL
+x11vnc:  OK
+websock: OK
+5901:    LISTEN
+6080:    LISTEN
+http6080:200
