@@ -1,18 +1,8 @@
 ┌─ 环境: ubuntu-latest
 ├─ 目录: /home/runner/work/ai-generated-operating-system/ai-generated-operating-system
-├─ 时间: 2026-10-18 07:17:36
-└─ 命令: ls -la
+├─ 时间: 2026-10-18 07:19:12
+└─ 命令: 你还有事吗？
 ──────────────────────────────────────
-total 1840
-drwxr-xr-x 7 runner runner    4096 Oct 18 07:17 .
-drwxr-xr-x 3 runner runner    4096 Oct 18 07:17 ..
-drwxr-xr-x 2 runner runner    4096 Oct 18 07:17 .devcontainer
-drwxr-xr-x 7 runner runner    4096 Oct 18 07:17 .git
-drwxr-xr-x 3 runner runner    4096 Oct 18 07:17 .github
-drwxr-xr-x 2 runner runner    4096 Oct 18 07:17 .vm
-drwxr-xr-x 2 runner runner    4096 Oct 18 07:17 .vm-output
--rw-r--r-- 1 runner runner 4024320 Oct 18 07:17 MOS_安装程序版 (1).iso
--rw-r--r-- 1 runner runner  281903 Oct 18 07:17 MOS_安装程序版 (4).html
--rw-r--r-- 1 runner runner      66 Oct 18 07:17 README.md
+/home/runner/work/_temp/4a460929-837e-4ef2-a24e-b57163f963df.sh: line 14: 你还有事吗？: command not found
 ──────────────────────────────────────
-退出码: 0
+退出码: 127
