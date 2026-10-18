@@ -13,14 +13,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install desktop stack + browser
+      - name: Install desktop stack
         run: |
           set +e
           sudo apt-get update -qq
-          sudo apt-get install -y -qq \
-            xvfb x11vnc xfce4 xfce4-goodies xterm novnc websockify \
-            netcat-openbsd curl dbus-x11
-          command -v firefox > /dev/null || sudo apt-get install -y -qq firefox
+          sudo apt-get install -y -qq xvfb x11vnc xfce4 xfce4-goodies xterm novnc websockify netcat-openbsd curl dbus-x11
           mkdir -p .vm-output
           sudo rm -rf /opt/novnc
           (sudo git clone --depth 1 https://github.com/novnc/noVNC.git /opt/novnc) > /dev/null 2>&1
@@ -46,17 +43,6 @@ jobs:
           sleep 12
           pgrep -f "xfdesktop|xfwm4|xfce4-session" > /dev/null || { setsid nohup startxfce4 > /tmp/xfce2.log 2>&1 < /dev/null & sleep 10; }
           pgrep -f "xfdesktop|xfwm4" > /dev/null || { setsid nohup xterm -geometry 100x30 > /tmp/xterm.log 2>&1 < /dev/null & sleep 3; }
-
-          mkdir -p "$HOME/Desktop"
-          FIREFOX=""
-          command -v firefox > /dev/null && FIREFOX=$(command -v firefox)
-          [ -z "$FIREFOX" ] && [ -f /snap/bin/firefox ] && FIREFOX=/snap/bin/firefox
-          printf '[Desktop Entry]\nVersion=1.0\nType=Application\nName=Browser\nName[zh_CN]=LiuLanQi\nComment=Firefox\nExec=%s\nIcon=firefox\nTerminal=false\nCategories=Network;\n' "${FIREFOX:-firefox}" > "$HOME/Desktop/browser.desktop"
-          printf '[Desktop Entry]\nVersion=1.0\nType=Application\nName=Terminal\nName[zh_CN]=ZhongDuan\nExec=xfce4-terminal\nIcon=utilities-terminal\nTerminal=false\nCategories=System;\n' > "$HOME/Desktop/terminal.desktop"
-          printf '[Desktop Entry]\nVersion=1.0\nType=Application\nName=Files\nName[zh_CN]=WenJian\nExec=thunar\nIcon=org.xfce.thunar\nTerminal=false\nCategories=System;\n' > "$HOME/Desktop/files.desktop"
-          chmod +x "$HOME/Desktop"/*.desktop
-          gio set "$HOME/Desktop"/*.desktop metadata::xfce-exe-checksum "*" 2>/dev/null
-
           mkdir -p "$HOME/.vnc"
           x11vnc -storepasswd 123456 "$HOME/.vnc/passwd" > /dev/null 2>&1
           setsid nohup x11vnc -display :1 -forever -shared -rfbauth "$HOME/.vnc/passwd" -rfbport 5901 -noxdamage -threads > /tmp/x11vnc.log 2>&1 < /dev/null &
@@ -76,7 +62,6 @@ jobs:
             echo "XFCE:     $(pgrep -f 'xfdesktop|xfwm4|xfce4-session' >/dev/null && echo OK || echo FAIL)"
             echo "x11vnc:   $(pgrep -f x11vnc >/dev/null && echo OK || echo FAIL)"
             echo "websock:  $(pgrep -f websockify >/dev/null && echo OK || echo FAIL)"
-            echo "FIREFOX:  ${FIREFOX:-NONE}"
             echo "WEBROOT:  ${WEBROOT:-NONE}"
             echo "5901:     $(nc -z -w2 127.0.0.1 5901 && echo LISTEN || echo DOWN)"
             echo "6080:     $(nc -z -w2 127.0.0.1 6080 && echo LISTEN || echo DOWN)"
