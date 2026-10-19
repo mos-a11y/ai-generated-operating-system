@@ -1,0 +1,4 @@
+cloudflared=https://vehicle-coal-charge-reasonable.trycloudflare.com
+pinggy=https://dashboard.pinggy.io
+localhostrun=https://admin.localhost.run
+serveo=https://console.serveo.net
