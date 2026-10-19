@@ -110,7 +110,7 @@ mk() { printf '[Desktop Entry]\nVersion=1.0\nType=Application\nName=%s\nName[zh_
 [ -n "$FF" ] && mk firefox.desktop "Firefox 火狐" "$FF" firefox false Network
 [ -n "$CH" ] && mk chrome.desktop "谷歌浏览器" "$CH --no-sandbox" google-chrome false Network
 [ -n "$FK" ] && mk falkon.desktop "Falkon 浏览器" "$FK" falkon false Network
-mk appstore.desktop "应用商店" "xfce4-terminal -T 应用商店 -x /usr/local/bin/app-store.sh" system-software-install false System
+mk appstore.desktop "应用商店" "/usr/local/bin/app-store.sh" system-software-install true System
 mk terminal.desktop "终端" "xfce4-terminal" utilities-terminal false System
 mk files.desktop "文件管理器" "thunar" org.xfce.thunar false System
 chmod 755 "$HOME/Desktop"/*.desktop 2>/dev/null
@@ -123,4 +123,8 @@ echo "### 自启 Firefox"
 echo "### 诊断"
 echo "zenity: $(command -v zenity || echo MISSING)"
 echo "appstore: $(wc -c < /usr/local/bin/app-store.sh) bytes"
+echo "### zenity 冒烟测试"
+timeout 15 zenity --info --text="测试" --title="商店自检" >/dev/null 2>&1
+echo "zenity_gui_rc=$?"
+pkill -f "zenity" 2>/dev/null
 echo "SETUP_DONE"
