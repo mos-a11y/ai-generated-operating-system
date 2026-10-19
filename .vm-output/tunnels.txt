@@ -1,2 +1,2 @@
-cloudflared=https://rss-break-called-samples.trycloudflare.com
-localhostrun=https://90122ac7a69053.lhr.life
+cloudflared=https://whom-pharmaceuticals-diet-friend.trycloudflare.com
+localhostrun=https://403ea0e48b588b.lhr.life
