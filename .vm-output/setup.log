@@ -1,0 +1,20 @@
+E: 无法定位软件包 xfce4-l10n
+E: 无法定位软件包 thunar-l10n
+  zh_CN.UTF-8... done
+Generation complete.
+FIREFOX=ok
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+CHROME=ok
+FALKON=none
+/home/runner/work/_temp/b443b162-4134-462f-b878-a731883ac368.sh: 行 30: convert: 未找到命令
+/home/runner/work/_temp/b443b162-4134-462f-b878-a731883ac368.sh: 行 36: convert: 未找到命令
+WALLPAPER=
+THEME=Greybird-dark ICON=Adwaita
+1638 /usr/local/bin/app-store.sh
+appstore.desktop
+chrome.desktop
+files.desktop
+firefox.desktop
+terminal.desktop
+SETUP_DONE
