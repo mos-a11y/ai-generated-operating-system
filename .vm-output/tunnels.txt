@@ -1,2 +1,2 @@
-cloudflared=https://manner-ste-salary-review.trycloudflare.com
-localhostrun=https://46d55e724d2dc3.lhr.life
+cloudflared=https://rss-break-called-samples.trycloudflare.com
+localhostrun=https://90122ac7a69053.lhr.life
