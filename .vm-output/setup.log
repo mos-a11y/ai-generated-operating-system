@@ -1,20 +1,36 @@
+### 1/6 中文与主题包
 E: 无法定位软件包 xfce4-l10n
 E: 无法定位软件包 thunar-l10n
   zh_CN.UTF-8... done
 Generation complete.
+### 2/6 Firefox 中文版
 FIREFOX=ok
+### 3/6 Google Chrome
 
 No VM guests are running outdated hypervisor (qemu) binaries on this host.
 CHROME=ok
 FALKON=none
-/home/runner/work/_temp/b443b162-4134-462f-b878-a731883ac368.sh: 行 30: convert: 未找到命令
-/home/runner/work/_temp/b443b162-4134-462f-b878-a731883ac368.sh: 行 36: convert: 未找到命令
-WALLPAPER=
+### 4/6 壁纸
+cloud-desktop/setup.sh: 行 37: convert: 未找到命令
+WALLPAPER=0
+### 5/6 主题与字体
 THEME=Greybird-dark ICON=Adwaita
-1638 /usr/local/bin/app-store.sh
+### 6/6 应用商店与图标
+-rwxr-xr-x 1 root root 2880 10月 19 12:15 /usr/local/bin/app-store.sh
 appstore.desktop
 chrome.desktop
 files.desktop
 firefox.desktop
 terminal.desktop
+### 自启 Firefox
+### 诊断
+zenity: MISSING
+appstore: 2880 bytes
 SETUP_DONE
+--- diag ---
+zenity: MISSING
+appstore_bytes: 2880
+desktop_files: appstore.desktop chrome.desktop files.desktop firefox.desktop terminal.desktop 
+firefox: ok
+chrome: ok
+theme: Greybird-dark
