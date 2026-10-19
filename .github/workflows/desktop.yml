@@ -142,6 +142,23 @@ jobs:
             printf '[Desktop Entry]\nVersion=1.0\nType=Application\nName=Files\nName[zh_CN]=Files\nExec=thunar\nIcon=org.xfce.thunar\nTerminal=false\nCategories=System;\n' > "$HOME/Desktop/files.desktop"
             chmod 755 "$HOME/Desktop"/*.desktop
             gio set "$HOME/Desktop"/*.desktop metadata::xfce-exe-checksum "*" 2>/dev/null
+            # 让中文界面与桌面图标生效
+            export DISPLAY=:1
+            export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/dbus-sock
+            export LANG=zh_CN.UTF-8
+            export LC_ALL=zh_CN.UTF-8
+            export LANGUAGE=zh_CN:zh
+            pkill -f xfdesktop 2>/dev/null
+            sleep 2
+            setsid nohup xfdesktop --display=:1 > /tmp/xfdesktop2.log 2>&1 < /dev/null &
+            sleep 5
+            # 直接在桌面上打开中文 Firefox
+            if [ -n "${FF:-}" ] && [ -x "$FF" ]; then
+              export MOZ_DISABLE_CONTENT_SANDBOX=1
+              setsid nohup "$FF" --display=:1 about:blank > /tmp/ff-run.log 2>&1 < /dev/null &
+              sleep 10
+            fi
+            echo "FF_LAUNCHED=${FF:-NONE}"
             echo "EXTRA_DONE FF=${FF:-NONE}"
           } > /tmp/extra.log 2>&1
           cat /tmp/extra.log | tail -20
