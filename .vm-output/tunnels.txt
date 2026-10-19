@@ -1,2 +1,2 @@
-cloudflared=https://straight-recreation-encouraging-shirt.trycloudflare.com
-localhostrun=https://61891b0ccef107.lhr.life
+cloudflared=https://manner-ste-salary-review.trycloudflare.com
+localhostrun=https://46d55e724d2dc3.lhr.life
