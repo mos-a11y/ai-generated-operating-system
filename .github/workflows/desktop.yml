@@ -42,7 +42,7 @@ jobs:
           export LC_ALL=zh_CN.UTF-8
           export LANGUAGE=zh_CN:zh
           export DISPLAY=:1
-          setsid nohup Xvfb :1 -screen 0 1280x800x24 > /tmp/xvfb.log 2>&1 < /dev/null &
+          setsid nohup Xvfb :1 -screen 0 1280x800x16 -ac -nolisten tcp > /tmp/xvfb.log 2>&1 < /dev/null &
           sleep 4
           dbus-daemon --session --address=unix:path=/tmp/dbus-sock --fork --print-address > /dev/null 2>&1
           export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/dbus-sock
@@ -52,7 +52,9 @@ jobs:
           pgrep -f "xfdesktop|xfwm4" > /dev/null || { setsid nohup xterm -geometry 100x30 > /tmp/xterm.log 2>&1 < /dev/null & sleep 3; }
           mkdir -p "$HOME/.vnc"
           x11vnc -storepasswd 123456 "$HOME/.vnc/passwd" > /dev/null 2>&1
-          setsid nohup x11vnc -display :1 -forever -shared -rfbauth "$HOME/.vnc/passwd" -rfbport 5901 -noxdamage -threads > /tmp/x11vnc.log 2>&1 < /dev/null &
+          setsid nohup x11vnc -display :1 -forever -shared -rfbauth "$HOME/.vnc/passwd" -rfbport 5901 \
+            -noxdamage -threads -ncache 10 -ncache_cr -scrollcopyrect -compresslevel 6 -quality 6 \
+            -deferupdate 30 -quiet > /tmp/x11vnc.log 2>&1 < /dev/null &
           sleep 5
           WEBROOT=""
           [ -f /opt/novnc/vnc.html ] && WEBROOT=/opt/novnc
@@ -117,34 +119,88 @@ jobs:
           for i in 1 2 3; do git push && break || sleep 3; done
           exit 0
 
-      - name: Install Chinese + Firefox in background (non-blocking)
+      - name: Install browsers + app store + zh theme
         run: |
           set +e
           {
-            export DEBIAN_FRONTEND=noninteractive
-            sudo apt-get install -y -qq locales language-pack-zh-hans \
-              fonts-wqy-zenhei fonts-wqy-microhei xfce4-l10n thunar-l10n 2>&1 | tail -3
-            sudo locale-gen zh_CN.UTF-8 2>&1 | tail -2
-            # Firefox 官方中文版（apt 的是 snap 壳，容器里打不开）
-            sudo rm -rf /opt/firefox
-            timeout 240 curl -sL "https://download.mozilla.org/?product=firefox-latest&os=linux64&lang=zh-CN" -o /tmp/ff.tar.xz
-            if [ -s /tmp/ff.tar.xz ]; then
-              sudo mkdir -p /opt
-              sudo tar xJf /tmp/ff.tar.xz -C /opt/ 2>&1 | tail -2
-            fi
-            # 桌面图标
-            mkdir -p "$HOME/Desktop"
-            FF=""
-            [ -x /opt/firefox/firefox ] && FF=/opt/firefox/firefox
-            [ -z "$FF" ] && [ -x /usr/bin/firefox ] && FF=/usr/bin/firefox
-            printf '[Desktop Entry]\nVersion=1.0\nType=Application\nName=Firefox\nName[zh_CN]=Firefox\nExec=%s\nIcon=firefox\nTerminal=false\nCategories=Network;\n' "${FF:-firefox}" > "$HOME/Desktop/firefox.desktop"
-            printf '[Desktop Entry]\nVersion=1.0\nType=Application\nName=Terminal\nName[zh_CN]=Terminal\nExec=xfce4-terminal\nIcon=utilities-terminal\nTerminal=false\nCategories=System;\n' > "$HOME/Desktop/terminal.desktop"
-            printf '[Desktop Entry]\nVersion=1.0\nType=Application\nName=Files\nName[zh_CN]=Files\nExec=thunar\nIcon=org.xfce.thunar\nTerminal=false\nCategories=System;\n' > "$HOME/Desktop/files.desktop"
-            chmod 755 "$HOME/Desktop"/*.desktop
-            gio set "$HOME/Desktop"/*.desktop metadata::xfce-exe-checksum "*" 2>/dev/null
-            echo "EXTRA_DONE FF=${FF:-NONE}"
-          } > /tmp/extra.log 2>&1
-          cat /tmp/extra.log | tail -20
+          export DEBIAN_FRONTEND=noninteractive
+          export DISPLAY=:1
+          export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/dbus-sock
+          export LANG=zh_CN.UTF-8
+          export LC_ALL=zh_CN.UTF-8
+          export LANGUAGE=zh_CN:zh
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq locales language-pack-zh-hans \
+            fonts-wqy-zenhei fonts-wqy-microhei fonts-noto-cjk fonts-noto-color-emoji \
+            xfce4-l10n thunar-l10n greybird-gtk-theme papirus-icon-theme \
+            zenity imagemagick falkon xdg-utils dbus-x11 2>&1 | tail -3
+          sudo locale-gen zh_CN.UTF-8 2>&1 | tail -2
+
+          sudo rm -rf /opt/firefox
+          timeout 280 curl -sL "https://download.mozilla.org/?product=firefox-latest&os=linux64&lang=zh-CN" -o /tmp/ff.tar.xz
+          [ -s /tmp/ff.tar.xz ] && sudo tar xJf /tmp/ff.tar.xz -C /opt/ 2>&1 | tail -1
+          [ -x /opt/firefox/firefox ] && echo "FIREFOX=ok" || echo "FIREFOX=none"
+
+          timeout 280 curl -sL -o /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          if [ -s /tmp/chrome.deb ]; then
+            sudo apt-get install -y -qq /tmp/chrome.deb 2>&1 | tail -2
+            sudo apt-get -f install -y -qq 2>&1 | tail -1
+          fi
+          command -v google-chrome-stable >/dev/null && echo "CHROME=ok" || echo "CHROME=none"
+          command -v falkon >/dev/null && echo "FALKON=ok" || echo "FALKON=none"
+
+          sudo mkdir -p /usr/share/backgrounds/xfce
+          convert -size 1600x1000 gradient:'#101a2b'-'#2b5876' \
+            -font "WenQuanYi-Micro-Hei" -pointsize 72 -fill '#ffffffff' \
+            -gravity center -annotate +0-50 '云 电 脑' \
+            -pointsize 26 -fill '#ffffffaa' -annotate +0+70 'Cloud Desktop · 中文环境' \
+            /usr/share/backgrounds/xfce/cloud-desktop.jpg 2>&1 | tail -1
+          [ -s /usr/share/backgrounds/xfce/cloud-desktop.jpg ] || \
+            convert -size 1600x1000 gradient:'#101a2b'-'#2b5876' /usr/share/backgrounds/xfce/cloud-desktop.jpg 2>&1 | tail -1
+          echo "WALLPAPER=$(ls /usr/share/backgrounds/xfce/cloud-desktop.jpg 2>/dev/null)"
+
+          THEME=Greybird-dark
+          [ -d /usr/share/themes/Greybird-dark ] || THEME=Greybird
+          [ -d /usr/share/themes/$THEME ] || THEME=Adwaita-dark
+          ICON=Papirus
+          [ -d /usr/share/icons/Papirus ] || ICON=Adwaita
+          xfconf-query -c xsettings -p /Net/ThemeName -s "$THEME" --create -t string 2>/dev/null
+          xfconf-query -c xsettings -p /Net/IconThemeName -s "$ICON" --create -t string 2>/dev/null
+          xfconf-query -c xsettings -p /Gtk/FontName -s "Noto Sans CJK SC 11" --create -t string 2>/dev/null
+          xfconf-query -c xsettings -p /Gtk/MonospaceFontName -s "Noto Sans Mono CJK SC 11" --create -t string 2>/dev/null
+          xfconf-query -c xsettings -p /Xft/Hinting -s 1 --create -t int 2>/dev/null
+          xfconf-query -c xsettings -p /Xft/HintStyle -s hintslight --create -t string 2>/dev/null
+          xfconf-query -c xsettings -p /Xft/Antialias -s 1 --create -t int 2>/dev/null
+          xfconf-query -c xsettings -p /Xft/RGBA -s rgb --create -t string 2>/dev/null
+          xfconf-query -c xfwm4 -p /general/theme -s "$THEME" --create -t string 2>/dev/null
+          xfconf-query -c xfwm4 -p /general/use_compositing -s false --create -t bool 2>/dev/null
+          xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/image-path -s /usr/share/backgrounds/xfce/cloud-desktop.jpg --create -t string 2>/dev/null
+          xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/image-style -s 3 --create -t int 2>/dev/null
+          xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor0/image-show -s true --create -t bool 2>/dev/null
+          echo "THEME=$THEME ICON=$ICON"
+
+          echo "IyEvYmluL2Jhc2gKZXhwb3J0IExBTkc9emhfQ04uVVRGLTggTENfQUxMPXpoX0NOLlVURi04IExBTkdVQUdFPXpoX0NOOnpoCmV4cG9ydCBESVNQTEFZPToxCmV4cG9ydCBEQlVTX1NFU1NJT05fQlVTX0FERFJFU1M9dW5peDpwYXRoPS90bXAvZGJ1cy1zb2NrClBLR1M9JCh6ZW5pdHkgLS1saXN0IC0tY2hlY2tsaXN0IC0tdGl0bGU9IuW6lOeUqOWVhuW6lyIgLS10ZXh0PSLli77pgInopoHlronoo4XnmoTlupTnlKjvvIzngrnnoa7lrprlvIDlp4vlronoo4UiIFwKICAtLWNvbHVtbj0i6KOFIiAtLWNvbHVtbj0i5YiG57G7IiAtLWNvbHVtbj0i5bqU55SoIiAtLWNvbHVtbj0i5YyF5ZCNIiAtLXdpZHRoPTY0MCAtLWhlaWdodD00ODAgXAogIEZBTFNFICLmtY/op4jlmagiICJDaHJvbWl1bSDlvIDmupDmtY/op4jlmagiICJjaHJvbWl1bS1icm93c2VyIiBcCiAgRkFMU0UgIua1j+iniOWZqCIgIkVwaXBoYW55IOeugOa0gea1j+iniOWZqCIgImVwaXBoYW55LWJyb3dzZXIiIFwKICBGQUxTRSAi5Yqe5YWsIiAiTGlicmVPZmZpY2Ug5Yqe5YWs5aWX5Lu2IiAibGlicmVvZmZpY2UiIFwKICBGQUxTRSAi5Yqe5YWsIiAiUERGIOmYheivu+WZqCBFdmluY2UiICJldmluY2UiIFwKICBGQUxTRSAi5Zu+5b2iIiAiR0lNUCDlm77lg4/lpITnkIYiICJnaW1wIiBcCiAgRkFMU0UgIuWbvuW9oiIgIklua3NjYXBlIOefoumHj+e7mOWbviIgImlua3NjYXBlIiBcCiAgRkFMU0UgIuW9semfsyIgIlZMQyDmkq3mlL7lmagiICJ2bGMiIFwKICBGQUxTRSAi5b2x6Z+zIiAiQXVkYWNpdHkg6Z+z6aKR57yW6L6RIiAiYXVkYWNpdHkiIFwKICBGQUxTRSAi57O757ufIiAiaHRvcCDku7vliqHnrqHnkIblmagiICJodG9wIiBcCiAgRkFMU0UgIuezu+e7nyIgIm5lb2ZldGNoIOezu+e7n+S/oeaBryIgIm5lb2ZldGNoIiBcCiAgRkFMU0UgIuW8gOWPkSIgIlB5dGhvbiDljIXnrqHnkIYgcGlwIiAicHl0aG9uMy1waXAiIFwKICBGQUxTRSAi5byA5Y+RIiAiR2l0IOeJiOacrOaOp+WItiIgImdpdCIgXAogIEZBTFNFICLlvIDlj5EiICJWaW0g57yW6L6R5ZmoIiAidmltIiBcCiAgRkFMU0UgIuW3peWFtyIgIjd6aXAg5Y6L57yp5bel5YW3IiAicDd6aXAtZnVsbCIgXAogIEZBTFNFICLlt6XlhbciICJXZ2V0L0N1cmwg5LiL6L295bel5YW3IiAid2dldCBjdXJsIiBcCiAgRkFMU0UgIuW3peWFtyIgIldpbmUg6L+Q6KGMIFdpbmRvd3Mg56iL5bqPIiAid2luZSIgXAogIEZBTFNFICLogYrlpKkiICJQaWRnaW4g5Y2z5pe26YCa6K6vIiAicGlkZ2luIiAyPi9kZXYvbnVsbCkKaWYgWyAteiAiJFBLR1MiIF07IHRoZW4gZXhpdCAwOyBmaQpMSVNUPSQoZWNobyAiJFBLR1MiIHwgdHIgInwiICIgIikKaWYgISB6ZW5pdHkgLS1xdWVzdGlvbiAtLXRpdGxlPSLlupTnlKjllYblupciIC0tdGV4dD0i5Y2z5bCG5a6J6KOF77yaJExJU1Rcblxu5piv5ZCm57un57ut77yf77yI57qm6ZyA5Yeg5YiG6ZKf77yJIjsgdGhlbiBleGl0IDA7IGZpCnhmY2U0LXRlcm1pbmFsIC1UICLlupTnlKjllYblupcgLSDlronoo4XkuK0iIC14IGJhc2ggLWMgInN1ZG8gYXB0LWdldCB1cGRhdGUgLXFxOyBzdWRvIGFwdC1nZXQgaW5zdGFsbCAteSAkTElTVDsgZWNobzsgZWNobyAn5a6J6KOF5a6M5oiQ77yM5oyJ5Zue6L2m5YWz6ZetJzsgcmVhZCIK" | base64 -d | sudo tee /usr/local/bin/app-store.sh > /dev/null
+          sudo chmod 755 /usr/local/bin/app-store.sh
+          wc -c /usr/local/bin/app-store.sh
+
+          mkdir -p "$HOME/Desktop"
+          FFBIN=""; [ -x /opt/firefox/firefox ] && FFBIN=/opt/firefox/firefox
+          CHBIN=""; command -v google-chrome-stable >/dev/null && CHBIN=/usr/bin/google-chrome-stable
+          FKBIN=""; command -v falkon >/dev/null && FKBIN=/usr/bin/falkon
+          mk() { printf '[Desktop Entry]\nVersion=1.0\nType=Application\nName=%s\nName[zh_CN]=%s\nExec=%s\nIcon=%s\nTerminal=false\nCategories=%s;\n' "$2" "$2" "$3" "$4" "$5" > "$HOME/Desktop/$1"; }
+          [ -n "$FFBIN" ] && mk firefox.desktop "Firefox 火狐" "$FFBIN" firefox Network
+          [ -n "$CHBIN" ] && mk chrome.desktop "谷歌浏览器" "$CHBIN --no-sandbox" google-chrome Network
+          [ -n "$FKBIN" ] && mk falkon.desktop "Falkon 浏览器" "$FKBIN" falkon Network
+          mk appstore.desktop "应用商店" "/usr/local/bin/app-store.sh" system-software-install System
+          mk terminal.desktop "终端" "xfce4-terminal" utilities-terminal System
+          mk files.desktop "文件管理器" "thunar" org.xfce.thunar System
+          chmod 755 "$HOME/Desktop"/*.desktop 2>/dev/null
+          gio set "$HOME/Desktop"/*.desktop metadata::xfce-exe-checksum "*" 2>/dev/null
+          ls "$HOME/Desktop"
+          echo "SETUP_DONE"
+          } > /tmp/setup.log 2>&1
+          tail -25 /tmp/setup.log
+          cp /tmp/setup.log .vm-output/setup.log 2>/dev/null
           exit 0
 
       - name: Keep alive
@@ -174,19 +230,20 @@ jobs:
             setsid nohup ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -p 443 -R 0:localhost:6080 a.pinggy.io > /tmp/pg.log 2>&1 < /dev/null &
             for i in $(seq 1 12); do
               sleep 4
-              U=$(grep -oE 'https://[A-Za-z0-9._-]*pinggy[A-Za-z0-9._-]*' /tmp/pg.log 2>/dev/null | head -1)
+              U=$(grep -oE 'https://[A-Za-z0-9._-]+\.(a\.)?free\.pinggy\.link' /tmp/pg.log 2>/dev/null | head -1)
+              [ -z "$U" ] && U=$(grep -oE 'https://[A-Za-z0-9._-]+\.pinggy\.link' /tmp/pg.log 2>/dev/null | grep -v dashboard | head -1)
               [ -n "$U" ] && echo "pinggy=$U" >> .vm-output/tunnels.txt && break
             done
             setsid nohup ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -R 80:localhost:6080 nokey@localhost.run > /tmp/lr.log 2>&1 < /dev/null &
             for i in $(seq 1 12); do
               sleep 4
-              U=$(grep -oE 'https://[A-Za-z0-9._-]+\.(lhr\.life|localhost\.run)' /tmp/lr.log 2>/dev/null | head -1)
+              U=$(grep -oE 'https://[A-Za-z0-9._-]+\.(lhr\.life|localhost\.run)' /tmp/lr.log 2>/dev/null | grep -vE 'admin|dashboard|console|www' | head -1)
               [ -n "$U" ] && echo "localhostrun=$U" >> .vm-output/tunnels.txt && break
             done
             setsid nohup ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -R 80:localhost:6080 serveo.net > /tmp/sv2.log 2>&1 < /dev/null &
             for i in $(seq 1 8); do
               sleep 4
-              U=$(grep -oE 'https://[A-Za-z0-9-]+\.serveo\.net' /tmp/sv2.log 2>/dev/null | head -1)
+              U=$(grep -oE 'https://[A-Za-z0-9-]+\.serveo\.net' /tmp/sv2.log 2>/dev/null | grep -vE 'console|www' | head -1)
               [ -n "$U" ] && echo "serveo=$U" >> .vm-output/tunnels.txt && break
             done
           }
@@ -226,10 +283,17 @@ jobs:
           LAST=""
           for i in $(seq 1 155); do
             OK=""
+            BESTT=999
+            : > .vm-output/speed.txt
             while IFS='=' read -r N U; do
               [ -z "$U" ] && continue
-              C=$(curl -s -o /dev/null -w '%{http_code}' -m 15 "$U/vnc.html")
-              [ "$C" = "200" ] && { OK="$U"; break; }
+              case "$U" in *dashboard*|*console*|*admin.*|*www.*) continue;; esac
+              if curl -s -m 15 "$U/vnc.html" | grep -qi novnc; then
+                T=$(curl -s -o /dev/null -m 15 -w '%{time_starttransfer}' "$U/vnc.html")
+                echo "$N $T $U" >> .vm-output/speed.txt
+                FAST=$(awk "BEGIN{print ($T<$BESTT)?1:0}")
+                [ "$FAST" = "1" ] && { BESTT=$T; OK="$U"; }
+              fi
             done < .vm-output/tunnels.txt 2>/dev/null
             if [ -z "$OK" ]; then
               start_tunnels
@@ -237,7 +301,7 @@ jobs:
               OK=$(head -1 .vm-output/tunnels.txt 2>/dev/null | cut -d= -f2-)
             fi
             if [ -n "$OK" ] && [ "$OK" != "$LAST" ]; then
-              echo "$OK" > .vm-output/desktop-url.txt
+              echo "${OK}/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=2000&resize=scale&compress=true&quality=5&compression=6&view_clip=true" > .vm-output/desktop-url.txt
               echo "url switched -> $OK"
               commit_out
               LAST="$OK"
