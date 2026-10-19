@@ -1,9 +1,8 @@
 ┌─ 环境: ubuntu-latest
 ├─ 目录: /home/runner/work/ai-generated-operating-system/ai-generated-operating-system
-├─ 时间: 2026-10-19 11:30:48
-└─ 命令: echo hi; getent hosts opposite-intl-labeled-members.trycloudflare.com || echo NO_RESOLVE
+├─ 时间: 2026-10-19 11:30:58
+└─ 命令: echo hi
 ──────────────────────────────────────
 hi
-NO_RESOLVE
 ──────────────────────────────────────
 退出码: 0
