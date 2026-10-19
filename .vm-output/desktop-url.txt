@@ -1,1 +1,1 @@
-https://daily-watts-reasonable-exempt.trycloudflare.com
+https://admin.localhost.run
