@@ -1,2 +1,2 @@
-cloudflared 0.072437 https://menu-connections-nor-administration.trycloudflare.com
-localhostrun 0.379369 https://77f12767247e27.lhr.life
+cloudflared 0.139601 https://straight-recreation-encouraging-shirt.trycloudflare.com
+localhostrun 0.377041 https://61891b0ccef107.lhr.life
