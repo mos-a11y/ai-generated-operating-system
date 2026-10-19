@@ -38,8 +38,8 @@ command -v google-chrome-stable >/dev/null && echo "CHROME=ok" || echo "CHROME=n
 command -v falkon >/dev/null && echo "FALKON=ok" || echo "FALKON=none"
 
 echo "### 4/6 壁纸"
-sudo mkdir -p /usr/share/backgrounds/xfce
-WP=/usr/share/backgrounds/xfce/cloud-desktop.jpg
+mkdir -p "$HOME/.local/share/backgrounds"
+WP="$HOME/.local/share/backgrounds/cloud-desktop.jpg"
 if command -v convert >/dev/null 2>&1; then
   convert -size 1600x1000 gradient:'#101a2b'-'#2b5876' \
     -font "WenQuanYi-Micro-Hei" -pointsize 72 -fill '#ffffffff' \
