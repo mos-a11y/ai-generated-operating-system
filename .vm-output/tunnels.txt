@@ -1,2 +1,2 @@
-cloudflared=https://menu-connections-nor-administration.trycloudflare.com
-localhostrun=https://77f12767247e27.lhr.life
+cloudflared=https://straight-recreation-encouraging-shirt.trycloudflare.com
+localhostrun=https://61891b0ccef107.lhr.life
