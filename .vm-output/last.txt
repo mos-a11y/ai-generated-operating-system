@@ -1,19 +1,9 @@
 ┌─ 环境: ubuntu-latest
 ├─ 目录: /home/runner/work/ai-generated-operating-system/ai-generated-operating-system
-├─ 时间: 2026-10-18 08:09:03
-└─ 命令: which firefox firefox-esr chromium chromium-browser 2>/dev/null; echo "---"; ls /usr/bin | grep -iE "firefox|chrom" ; echo "---"; echo $DISPLAY
+├─ 时间: 2026-10-19 11:30:48
+└─ 命令: echo hi; getent hosts opposite-intl-labeled-members.trycloudflare.com || echo NO_RESOLVE
 ──────────────────────────────────────
-/usr/bin/firefox
-/usr/bin/chromium
-/usr/bin/chromium-browser
----
-chromedriver
-chromium
-chromium-browser
-firefox
-google-chrome
-google-chrome-stable
----
-
+hi
+NO_RESOLVE
 ──────────────────────────────────────
 退出码: 0
