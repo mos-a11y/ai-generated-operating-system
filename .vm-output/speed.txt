@@ -1,0 +1,2 @@
+cloudflared 0.072437 https://menu-connections-nor-administration.trycloudflare.com
+localhostrun 0.379369 https://77f12767247e27.lhr.life
