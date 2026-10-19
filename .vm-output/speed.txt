@@ -1,2 +1,1 @@
-cloudflared 0.097931 https://manner-ste-salary-review.trycloudflare.com
-localhostrun 0.384093 https://46d55e724d2dc3.lhr.life
+cloudflared 0.145682 https://rss-break-called-samples.trycloudflare.com
