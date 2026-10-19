@@ -1,11 +1,11 @@
 LANG:     zh_CN.UTF-8
 Xvfb:     OK
 XFCE:     OK
-x11vnc:   OK
+x11vnc:   FAIL
 websock:  OK
 WEBROOT:  /opt/novnc
-5901:     LISTEN
+5901:     DOWN
 6080:     LISTEN
-RFB:      RFB 003.008
+RFB:      EMPTY
 http6080: 200
 rootcode: 200
