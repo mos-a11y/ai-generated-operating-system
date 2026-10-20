@@ -1,2 +1,2 @@
-cloudflared 0.113496 https://serving-diary-replacing-surf.trycloudflare.com
-localhostrun 0.511379 https://f59571a278fec0.lhr.life
+cloudflared 0.074178 https://last-mining-qty-accepting.trycloudflare.com
+localhostrun 0.375753 https://a223369cbe2540.lhr.life
