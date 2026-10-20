@@ -1,2 +1,2 @@
-cloudflared 0.074178 https://last-mining-qty-accepting.trycloudflare.com
-localhostrun 0.375753 https://a223369cbe2540.lhr.life
+cloudflared 0.079971 https://browser-mold-jpeg-strong.trycloudflare.com
+localhostrun 0.087616 https://1752c0ce3c2c60.lhr.life
