@@ -251,6 +251,12 @@ jobs:
             echo "panel_pid=$(pgrep -f panel/server.py | head -1)" > .vm-output/panel.info
           }
 
+          start_executor() {
+            pkill -f "cloud-desktop/executor.sh" >/dev/null 2>&1
+            setsid nohup bash cloud-desktop/executor.sh > /tmp/exec.log 2>&1 < /dev/null &
+            sleep 3
+          }
+
           start_snapshot() {
             pkill -f "cloud-desktop/snapshot.sh" >/dev/null 2>&1
             setsid nohup bash cloud-desktop/snapshot.sh > /tmp/snap.log 2>&1 < /dev/null &
@@ -303,6 +309,7 @@ jobs:
           start_panel
           panel_ok
           start_snapshot
+          start_executor
 
           start_tunnels
           commit_out
