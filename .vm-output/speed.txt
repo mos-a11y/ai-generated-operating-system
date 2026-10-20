@@ -1,2 +1,1 @@
-cloudflared 0.079836 https://traditional-camcorder-consistently-adding.trycloudflare.com
-localhostrun 0.378819 https://e3c74799260896.lhr.life
+cloudflared 0.081038 https://traditional-camcorder-consistently-adding.trycloudflare.com
