@@ -1,2 +1,2 @@
-cloudflared 0.114807 https://whom-pharmaceuticals-diet-friend.trycloudflare.com
-localhostrun 0.374042 https://403ea0e48b588b.lhr.life
+cloudflared 0.113496 https://serving-diary-replacing-surf.trycloudflare.com
+localhostrun 0.511379 https://f59571a278fec0.lhr.life
