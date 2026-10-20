@@ -1,2 +1,2 @@
-cloudflared=https://serving-diary-replacing-surf.trycloudflare.com
-localhostrun=https://f59571a278fec0.lhr.life
+cloudflared=https://last-mining-qty-accepting.trycloudflare.com
+localhostrun=https://a223369cbe2540.lhr.life
