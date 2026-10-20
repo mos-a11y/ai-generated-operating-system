@@ -264,8 +264,26 @@ jobs:
             echo "snap_procs=$(pgrep -f cloud-desktop/snapshot.sh | wc -l)" >> .vm-output/snap.info
           }
 
-          push_stats() {
-            git add -f .vm-output/panel-stats.json >/dev/null 2>&1
+          sample_and_push() {
+            [ -n "$PANEL_TOKEN" ] || PANEL_TOKEN=$(curl -s -m 10 -X POST -H 'Content-Type: application/json' -d '{"password":"123456"}' http://localhost:8899/api/login | python3 -c 'import sys,json;print(json.load(sys.stdin).get("token",""))' 2>/dev/null)
+            D=$(curl -s -m 8 "http://localhost:8899/api/stats?token=$PANEL_TOKEN")
+            P=$(curl -s -m 8 "http://localhost:8899/api/processes?token=$PANEL_TOKEN")
+            echo "$D" > /tmp/_d.json
+            echo "$P" > /tmp/_p.json
+            python3 - <<'PYX'
+import json, time
+try:
+    d = json.load(open('/tmp/_d.json'))
+    if 'cpu_info' not in d: raise ValueError('bad')
+    try: p = json.load(open('/tmp/_p.json')).get('list', [])
+    except Exception: p = []
+    d['processes'] = p
+    d['ts'] = time.strftime('%H:%M:%S')
+    json.dump(d, open('.vm-output/panel-stats.json','w'), ensure_ascii=False)
+except Exception as e:
+    open('/tmp/sample.err','w').write(str(e))
+PYX
+            git add -f .vm-output/ >/dev/null 2>&1
             if git diff --staged --quiet; then return 0; fi
             git commit -m "stats" >/dev/null 2>&1
             git push --force >/dev/null 2>&1 || { git pull --rebase -X ours >/dev/null 2>&1; git push --force >/dev/null 2>&1; }
@@ -333,7 +351,7 @@ jobs:
               sleep 5
               OK=$(head -1 .vm-output/tunnels.txt 2>/dev/null | cut -d= -f2-)
             fi
-            push_stats
+            for k in 1 2 3 4 5 6; do sample_and_push; sleep 8; done
             if ! panel_ok; then
               start_panel
               panel_ok
