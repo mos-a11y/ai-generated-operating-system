@@ -1,1 +1,1 @@
-cloudflared 0.086830 https://traditional-camcorder-consistently-adding.trycloudflare.com
+cloudflared 0.127755 https://traditional-camcorder-consistently-adding.trycloudflare.com
