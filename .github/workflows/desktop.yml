@@ -195,6 +195,51 @@ jobs:
             git push --force >/dev/null 2>&1 || { git pull --rebase -X ours >/dev/null 2>&1; git push --force >/dev/null 2>&1; }
           }
 
+          start_panel() {
+            pgrep -f "panel/server.py" >/dev/null || {
+              setsid nohup python3 cloud-desktop/panel/server.py > /tmp/panel.log 2>&1 < /dev/null &
+              sleep 5
+            }
+            : > .vm-output/panel-tunnels.txt
+            [ -s /tmp/cf ] || curl -sL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o /tmp/cf >/dev/null 2>&1
+            chmod +x /tmp/cf 2>/dev/null
+            if [ -s /tmp/cf ]; then
+              pkill -f "cf tunnel --url http://localhost:8899" >/dev/null 2>&1
+              sleep 2
+              setsid nohup /tmp/cf tunnel --url http://localhost:8899 --no-autoupdate > /tmp/cf3.log 2>&1 < /dev/null &
+              for i in $(seq 1 15); do
+                sleep 4
+                U=$(grep -oE 'https://[a-z0-9-]+\\.trycloudflare\\.com' /tmp/cf3.log 2>/dev/null | head -1)
+                [ -n "$U" ] && echo "cf=$U" >> .vm-output/panel-tunnels.txt && break
+              done
+            fi
+            setsid nohup ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -R 80:localhost:8899 nokey@localhost.run > /tmp/lr2.log 2>&1 < /dev/null &
+            for i in $(seq 1 10); do
+              sleep 4
+              U=$(grep -oE 'https://[A-Za-z0-9._-]+\\.(lhr\\.life|localhost\\.run)' /tmp/lr2.log 2>/dev/null | grep -vE 'admin|dashboard|console|www' | head -1)
+              [ -n "$U" ] && echo "lr=$U" >> .vm-output/panel-tunnels.txt && break
+            done
+            setsid nohup ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -R 80:localhost:8899 serveo.net > /tmp/sv3.log 2>&1 < /dev/null &
+            for i in $(seq 1 8); do
+              sleep 4
+              U=$(grep -oE 'https://[A-Za-z0-9-]+\\.serveo\\.net' /tmp/sv3.log 2>/dev/null | grep -vE 'console|www' | head -1)
+              [ -n "$U" ] && echo "sv=$U" >> .vm-output/panel-tunnels.txt && break
+            done
+            echo "panel_pid=$(pgrep -f panel/server.py | head -1)" > .vm-output/panel.info
+          }
+
+          panel_ok() {
+            while IFS='=' read -r N U; do
+              [ -z "$U" ] && continue
+              case "$U" in *dashboard*|*console*|*admin.*|*www.*) continue;; esac
+              if curl -s -m 15 "$U/" | grep -q "云面板"; then
+                echo "$U" > .vm-output/panel-url.txt
+                return 0
+              fi
+            done < .vm-output/panel-tunnels.txt 2>/dev/null
+            return 1
+          }
+
           # 保证桌面 + 中文 + Firefox 都活着（放在本步骤里才不会被步骤结束时清理）
           export DISPLAY=:1
           export DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/dbus-sock
@@ -218,6 +263,9 @@ jobs:
           fi
           echo "FF=$FF" > .vm-output/ff.txt
 
+          start_panel
+          panel_ok
+
           start_tunnels
           commit_out
           LAST=""
@@ -239,6 +287,10 @@ jobs:
               start_tunnels
               sleep 5
               OK=$(head -1 .vm-output/tunnels.txt 2>/dev/null | cut -d= -f2-)
+            fi
+            if ! panel_ok; then
+              start_panel
+              panel_ok
             fi
             if [ -n "$OK" ] && [ "$OK" != "$LAST" ]; then
               echo "${OK}/vnc.html?autoconnect=true&reconnect=true&reconnect_delay=2000&resize=scale&compress=true&quality=5&compression=6&view_clip=true" > .vm-output/desktop-url.txt
