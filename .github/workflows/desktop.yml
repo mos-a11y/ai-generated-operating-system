@@ -209,7 +209,7 @@ jobs:
             [ -s /tmp/cf ] || curl -sL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o /tmp/cf >/dev/null 2>&1
             chmod +x /tmp/cf 2>/dev/null
             if [ -s /tmp/cf ]; then
-              setsid nohup /tmp/cf tunnel --url http://localhost:8899 --no-autoupdate --loglevel info > /tmp/cf3.log 2>&1 < /dev/null &
+              setsid nohup /tmp/cf tunnel --url http://localhost:8899 --no-autoupdate --loglevel info --metrics localhost:20242 > /tmp/cf3.log 2>&1 < /dev/null &
               for i in $(seq 1 20); do
                 sleep 5
                 U=$(grep -oE 'https://[a-z0-9-]+\\.trycloudflare\\.com' /tmp/cf3.log 2>/dev/null | head -1)
