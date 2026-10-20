@@ -1,2 +1,2 @@
-cloudflared=https://last-mining-qty-accepting.trycloudflare.com
-localhostrun=https://a223369cbe2540.lhr.life
+cloudflared=https://browser-mold-jpeg-strong.trycloudflare.com
+localhostrun=https://1752c0ce3c2c60.lhr.life
