@@ -19,16 +19,18 @@ Generation complete.
 ### 2/6 Firefox 中文版
 FIREFOX=ok
 ### 3/6 Google Chrome
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
 CHROME=ok
 FALKON=ok
 ### 4/6 壁纸
 convert-im6.q16: unable to read font `WenQuanYi-Micro-Hei' @ warning/annotate.c/RenderType/1001.
--rw-r--r-- 1 runner runner 41962 10月 20 10:24 /home/runner/.local/share/backgrounds/cloud-desktop.jpg
+-rw-r--r-- 1 runner runner 41962 10月 20 10:41 /home/runner/.local/share/backgrounds/cloud-desktop.jpg
 WALLPAPER=1
 ### 5/6 主题与字体
 THEME=Greybird-dark ICON=Papirus
 ### 6/6 应用商店与图标
--rwxr-xr-x 1 root root 3615 10月 20 10:24 /usr/local/bin/app-store.sh
+-rwxr-xr-x 1 root root 3615 10月 20 10:41 /usr/local/bin/app-store.sh
 appstore.desktop
 chrome.desktop
 falkon.desktop
