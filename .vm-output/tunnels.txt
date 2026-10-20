@@ -1,2 +1,2 @@
-cloudflared=https://camps-soon-most-remain.trycloudflare.com
-localhostrun=https://adc81b066bffe9.lhr.life
+cloudflared=https://traditional-camcorder-consistently-adding.trycloudflare.com
+localhostrun=https://e3c74799260896.lhr.life
