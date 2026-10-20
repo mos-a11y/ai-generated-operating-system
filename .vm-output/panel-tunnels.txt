@@ -1,1 +1,1 @@
-pg=https://woohq-20-171-37-204.run.pinggy-free.link
+pg=https://epaic-20-171-37-204.run.pinggy-free.link
