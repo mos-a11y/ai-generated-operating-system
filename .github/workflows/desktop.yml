@@ -252,43 +252,16 @@ jobs:
           }
 
           start_snapshot() {
-            PT=$(curl -s -m 10 -X POST -H 'Content-Type: application/json' -d '{"password":"123456"}' http://localhost:8899/api/login | python3 -c 'import sys,json;print(json.load(sys.stdin).get("token",""))')
-            echo "panel_token=${PT:0:6}..." > .vm-output/snap.info
-            cat > /tmp/snap.sh <<'SNAPEOF'
-#!/bin/bash
-export PT="$1"
-while true; do
-  D=$(curl -s -m 8 "http://localhost:8899/api/stats?token=$PT")
-  P=$(curl -s -m 8 "http://localhost:8899/api/processes?token=$PT")
-  if [ -n "$D" ] && echo "$D" | grep -q cpu_info; then
-    python3 - "$D" "$P" <<'PYEOF'
-import sys, json
-try:
-    d = json.loads(sys.argv[1])
-    try: p = json.loads(sys.argv[2]).get('list', [])
-    except Exception: p = []
-    d['processes'] = p
-    d['ts'] = __import__('time').strftime('%H:%M:%S')
-    open('.vm-output/panel-stats.json','w').write(json.dumps(d, ensure_ascii=False))
-except Exception as e:
-    open('/tmp/snap.err','w').write(str(e))
-PYEOF
-  fi
-  sleep 3
-done
-SNAPEOF
-            chmod +x /tmp/snap.sh
-            pkill -f "snap.sh" >/dev/null 2>&1
-            setsid nohup /tmp/snap.sh "$PT" > /tmp/snap.log 2>&1 < /dev/null &
-            sleep 5
-            echo "snap_started=$(pgrep -f snap.sh | wc -l)" >> .vm-output/snap.info
+            pkill -f "cloud-desktop/snapshot.sh" >/dev/null 2>&1
+            setsid nohup bash cloud-desktop/snapshot.sh > /tmp/snap.log 2>&1 < /dev/null &
+            sleep 6
+            echo "snap_procs=$(pgrep -f cloud-desktop/snapshot.sh | wc -l)" >> .vm-output/snap.info
           }
 
           push_stats() {
-            cd "$GITHUB_WORKSPACE" 2>/dev/null || true
             git add -f .vm-output/panel-stats.json >/dev/null 2>&1
-            git diff --staged --quiet && return 0
-            git commit -m "stats snapshot" >/dev/null 2>&1
+            if git diff --staged --quiet; then return 0; fi
+            git commit -m "stats" >/dev/null 2>&1
             git push --force >/dev/null 2>&1 || { git pull --rebase -X ours >/dev/null 2>&1; git push --force >/dev/null 2>&1; }
           }
 
