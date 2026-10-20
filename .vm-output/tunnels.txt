@@ -1,2 +1,2 @@
-cloudflared=https://whom-pharmaceuticals-diet-friend.trycloudflare.com
-localhostrun=https://403ea0e48b588b.lhr.life
+cloudflared=https://serving-diary-replacing-surf.trycloudflare.com
+localhostrun=https://f59571a278fec0.lhr.life
