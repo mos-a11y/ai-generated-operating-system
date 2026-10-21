@@ -1,1 +1,2 @@
-cloudflared 0.124948 https://traditional-camcorder-consistently-adding.trycloudflare.com
+cloudflared 0.179001 https://soccer-weighted-founded-secrets.trycloudflare.com
+localhostrun 0.253533 https://6ef172c2779e81.lhr.life
