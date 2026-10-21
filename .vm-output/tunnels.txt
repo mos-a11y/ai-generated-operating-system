@@ -1,2 +1,2 @@
-cloudflared=https://traditional-camcorder-consistently-adding.trycloudflare.com
-localhostrun=https://e3c74799260896.lhr.life
+cloudflared=https://soccer-weighted-founded-secrets.trycloudflare.com
+localhostrun=https://6ef172c2779e81.lhr.life
