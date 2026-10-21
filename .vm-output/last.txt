@@ -1,16 +1,13 @@
 ┌─ 环境: ubuntu-latest
 ├─ 目录: /home/runner/work/ai-generated-operating-system/ai-generated-operating-system
-├─ 时间: 2026-10-19 11:41:04
-└─ 命令: U=https://vehicle-coal-charge-reasonable.trycloudflare.com; echo R; getent hosts vehicle-coal-charge-reasonable.trycloudflare.com || echo NO_RESOLVE; echo H; curl -s -o /dev/null -w %{http_code} -m 20 $U/vnc.html; echo; echo N; curl -s -m 20 $U/vnc.html | grep -ci novnc; echo P; curl -s -m 20 $U/ | grep -ci novnc
+├─ 时间: 2026-10-21 10:48:51
+└─ 命令: echo NOVNCDIRS; for d in /usr/share/novnc /opt/novnc /usr/local/share/novnc; do [ -d $d ] && echo FOUND $d && ls $d/panel-stats.json 2>/dev/null; done; echo WS; ps aux | grep -i websockify | grep -v grep | head -3; echo PANEL; pgrep -f panel/server.py; echo LOCALJSON; ls -l $(pwd)/.vm-output/panel-stats.json 2>/dev/null; echo CURL; curl -s -o /dev/null -w %{http_code} -m 5 http://localhost:6080/panel-stats.json
 ──────────────────────────────────────
-R
-2606:4700::6810:e684 vehicle-coal-charge-reasonable.trycloudflare.com
-2606:4700::6810:e784 vehicle-coal-charge-reasonable.trycloudflare.com
-H
-200
-N
-124
-P
-0
-──────────────────────────────────────
-退出码: 1
+NOVNCDIRS
+WS
+PANEL
+LOCALJSON
+-rw-r--r-- 1 runner runner 6703 Oct 21 10:48 /home/runner/work/ai-generated-operating-system/ai-generated-operating-system/.vm-output/panel-stats.json
+CURL
+000──────────────────────────────────────
+退出码: 7
