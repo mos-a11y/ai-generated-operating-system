@@ -13,7 +13,7 @@ import os, json, time, base64, subprocess, urllib.request, urllib.error
 TOKEN = os.environ.get('GITHUB_TOKEN', '')
 REPO = 'mos-a11y/ai-generated-operating-system'
 BR = 'main'
-BASE = 'https://api.github.com/repos/%s/contents' % REPO
+BASE = 'https://api.github.com/repos/%s/contents/' % REPO
 RAW = 'https://raw.githubusercontent.com/%s/%s' % (REPO, BR)
 H = {
     'Authorization': 'token ' + TOKEN,
