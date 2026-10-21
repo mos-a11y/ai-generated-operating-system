@@ -47,8 +47,8 @@ jobs:
 
       - name: Save output
         run: |
-          git config user.name "cloud-terminal"
-          git config user.email "terminal@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f .vm-output/last.txt .vm-output/cwd 2>/dev/null || true
           git diff --staged --quiet || git commit -m "cloud terminal output"
           for i in 1 2 3; do git push && break || sleep 3; done
