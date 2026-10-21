@@ -1,2 +1,1 @@
-cloudflared 0.179001 https://soccer-weighted-founded-secrets.trycloudflare.com
-localhostrun 0.253533 https://6ef172c2779e81.lhr.life
+cloudflared 0.107932 https://soccer-weighted-founded-secrets.trycloudflare.com
