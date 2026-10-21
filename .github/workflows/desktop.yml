@@ -192,7 +192,7 @@ jobs:
             git add -f .vm-output/ >/dev/null 2>&1
             git diff --staged --quiet && return 0
             git commit -m "vm status" >/dev/null 2>&1
-            git push --force >/dev/null 2>&1 || { git pull --rebase -X ours >/dev/null 2>&1; git push --force >/dev/null 2>&1; }
+            git push >/dev/null 2>&1 || { git pull --rebase -X ours >/dev/null 2>&1; git push >/dev/null 2>&1; }
           }
 
           start_panel() {
@@ -269,7 +269,7 @@ jobs:
             git add -f .vm-output/ >/dev/null 2>&1
             if git diff --staged --quiet; then return 0; fi
             git commit -m "stats" >/dev/null 2>&1
-            git push --force >/dev/null 2>&1 || { git pull --rebase -X ours >/dev/null 2>&1; git push --force >/dev/null 2>&1; }
+            git push >/dev/null 2>&1 || { git pull --rebase -X ours >/dev/null 2>&1; git push >/dev/null 2>&1; }
           }
 
           panel_ok() {
@@ -334,7 +334,12 @@ jobs:
               sleep 5
               OK=$(head -1 .vm-output/tunnels.txt 2>/dev/null | cut -d= -f2-)
             fi
-            for k in 1 2 3 4 5 6; do sample_and_push; sleep 8; done
+            for k in 1 2 3 4 5 6; do
+              git fetch origin main >/dev/null 2>&1
+              git checkout FETCH_HEAD -- .vm-output/commands.json >/dev/null 2>&1
+              sample_and_push
+              sleep 8
+            done
             if ! panel_ok; then
               start_panel
               panel_ok
