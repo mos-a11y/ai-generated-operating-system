@@ -25,12 +25,12 @@ CHROME=ok
 FALKON=ok
 ### 4/6 壁纸
 convert-im6.q16: unable to read font `WenQuanYi-Micro-Hei' @ warning/annotate.c/RenderType/1001.
--rw-r--r-- 1 runner runner 41962 10月 20 11:15 /home/runner/.local/share/backgrounds/cloud-desktop.jpg
+-rw-r--r-- 1 runner runner 41962 10月 21 05:31 /home/runner/.local/share/backgrounds/cloud-desktop.jpg
 WALLPAPER=1
 ### 5/6 主题与字体
 THEME=Greybird-dark ICON=Papirus
 ### 6/6 应用商店与图标
--rwxr-xr-x 1 root root 3615 10月 20 11:15 /usr/local/bin/app-store.sh
+-rwxr-xr-x 1 root root 3615 10月 21 05:31 /usr/local/bin/app-store.sh
 appstore.desktop
 chrome.desktop
 falkon.desktop
