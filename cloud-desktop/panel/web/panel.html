@@ -65,6 +65,7 @@ textarea{font-family:Consolas,monospace;font-size:12px}
   <span style="color:#666">云电脑地址</span>
   <input id="hostin" placeholder="如 xxx.trycloudflare.com" style="flex:1;padding:5px;font-size:12px">
   <button class="btn" style="padding:5px 9px" onclick="saveHost()">连接</button>
+  <button class="btn gray" style="padding:5px 9px" onclick="$('gate').classList.remove('hide')">密钥</button>
 </div>
 <div class="side" style="top:86px">
   <a href="#" class="on" data-p="home">📊 首页监控</a>
@@ -79,7 +80,7 @@ textarea{font-family:Consolas,monospace;font-size:12px}
 
 <div id="gate" class="hide" style="position:fixed;inset:0;background:rgba(15,22,32,.96);z-index:200;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:24px;color:#cfd8e3;text-align:center">
   <div style="font-size:20px;color:#4da3ff;font-weight:700;margin-bottom:10px">☁ 云面板</div>
-  <div style="font-size:12px;color:#9fb3c8;margin-bottom:12px;line-height:1.8">看监控不需要密钥；要远程操控（装软件、改文件、结束进程）才需要<br>密钥只需填一次，会保存在本机</div>
+  <div style="font-size:12px;color:#9fb3c8;margin-bottom:12px;line-height:1.8">填一次即可，保存在本机浏览器<br>用于读取云电脑数据 + 发送操控指令</div>
   <input id="gatein" placeholder="粘贴访问密钥" style="max-width:340px;background:#16202c;border:1px solid #2b3648;color:#d6e2f0">
   <button class="btn b" style="margin-top:10px;padding:9px 22px" onclick="saveTok()">进入面板</button>
 </div>
@@ -290,7 +291,12 @@ function doRemove(){var k=Object.keys(sel);if(!k.length){alert('先勾选');retu
 
 async function tick(){
   var f=await getFile('.vm-output/panel-stats.json');
-  if(!f){$('hint').textContent='未读到数据（云电脑可能已关机）。重开一台后本页自动恢复。';$('live').className='live off';return;}
+  if(!f){
+    $('hint').className='note';
+    $('hint').innerHTML='读不到数据。原因通常是：① 云电脑已关机（找我重开一台）；② 国内访问 raw.githubusercontent.com 不通。'+
+      '解决办法：点右上角「密钥」填一次访问密钥（api.github.com 国内可直连），数据立刻就来。'+
+      '<br>已填密钥仍无数据 = 云电脑关了，让我重开。';
+    $('live').className='live off';return;}
   var d;try{d=JSON.parse(f.txt);}catch(e){return;}
   $('hint').className='hide';$('live').className='live';$('t_ts').textContent=d.ts||'';
   $('k_cpu').textContent=(d.cpu||0)+'%';
