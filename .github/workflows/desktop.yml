@@ -309,8 +309,7 @@ jobs:
 
           start_panel
           panel_ok
-          start_snapshot
-          start_executor
+          GITHUB_TOKEN='${{ github.token }}' python3 cloud-desktop/push_stats.py >> /tmp/bridge.log 2>&1
 
           start_tunnels
           commit_out
@@ -335,9 +334,7 @@ jobs:
               OK=$(head -1 .vm-output/tunnels.txt 2>/dev/null | cut -d= -f2-)
             fi
             for k in 1 2 3 4 5 6; do
-              git fetch origin main >/dev/null 2>&1
-              git checkout FETCH_HEAD -- .vm-output/commands.json >/dev/null 2>&1
-              sample_and_push
+              GITHUB_TOKEN='${{ github.token }}' python3 cloud-desktop/push_stats.py >> /tmp/bridge.log 2>&1
               sleep 8
             done
             if ! panel_ok; then
