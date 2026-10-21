@@ -267,9 +267,9 @@ jobs:
           sample_and_push() {
             bash cloud-desktop/sample.sh > /tmp/sample.log 2>&1
             git add -f .vm-output/ >/dev/null 2>&1
-            if git diff --staged --quiet; then return 0; fi
-            git commit -m "stats" >/dev/null 2>&1
-            git push >/dev/null 2>&1 || { git pull --rebase -X ours >/dev/null 2>&1; git push >/dev/null 2>&1; }
+            if ! git diff --staged --quiet; then git commit -m "stats" >/dev/null 2>&1; fi
+            git pull --rebase -X ours >/dev/null 2>&1
+            git push >/dev/null 2>&1 || git push >/dev/null 2>&1
           }
 
           panel_ok() {
