@@ -1,0 +1,6 @@
+.vm-output/
+.vm/
+cloud-desktop/
+.devcontainer/
+*.log
+*.tmp
