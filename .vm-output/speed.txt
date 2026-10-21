@@ -1,2 +1,0 @@
-cloudflared 0.107866 https://batch-compete-must-municipality.trycloudflare.com
-localhostrun 1.201190 https://85dbec5c69c8a6.lhr.life
