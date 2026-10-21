@@ -11,11 +11,11 @@ body{font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif;background:#f2
 .top .logo{font-size:17px;font-weight:700}
 .top .rt{margin-left:auto;font-size:11px;display:flex;gap:8px}
 .top .rt b{background:rgba(255,255,255,.22);padding:2px 6px;border-radius:4px}
-.side{width:150px;background:#2b3648;position:fixed;top:50px;bottom:0;left:0;overflow:auto;z-index:90}
+.side{width:150px;background:#2b3648;position:fixed;top:86px;bottom:0;left:0;overflow:auto;z-index:90}
 .side a{display:block;color:#b8c2d0;padding:11px 13px;text-decoration:none;font-size:13px;border-left:3px solid transparent}
 .side a:hover{background:#374357;color:#fff}
 .side a.on{background:#1e5eff;color:#fff;border-left-color:#ffd166}
-.main{margin-left:150px;padding:60px 14px 20px}
+.main{margin-left:150px;padding:98px 14px 20px}
 .card{background:#fff;border-radius:6px;padding:14px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .card h3{font-size:14px;margin-bottom:10px;padding-left:8px;border-left:3px solid #1e5eff}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:11px}
@@ -61,7 +61,12 @@ textarea{font-family:Consolas,monospace;font-size:12px}
   <span class="logo">☁ 云面板</span>
   <div class="rt"><span><span id="live" class="live off"></span><b id="t_ts">--</b></span><span>负载 <b id="t_load">-</b></span></div>
 </div>
-<div class="side">
+<div id="hostbar" style="position:fixed;top:50px;left:0;right:0;z-index:95;background:#fff;padding:7px 12px;border-bottom:1px solid #e5e9f0;display:flex;gap:6px;align-items:center;font-size:12px">
+  <span style="color:#666">云电脑地址</span>
+  <input id="hostin" placeholder="如 xxx.trycloudflare.com" style="flex:1;padding:5px;font-size:12px">
+  <button class="btn" style="padding:5px 9px" onclick="saveHost()">连接</button>
+</div>
+<div class="side" style="top:86px">
   <a href="#" class="on" data-p="home">📊 首页监控</a>
   <a href="#" data-p="proc">⚙ 进程管理</a>
   <a href="#" data-p="file">📁 文件管理</a>
@@ -138,7 +143,8 @@ textarea{font-family:Consolas,monospace;font-size:12px}
   <div id="p_store" class="hide">
     <div class="card"><h3>软件商店（可安装 / 卸载）</h3>
       <div id="apps" class="apps"></div>
-      <div style="margin-top:11px">
+      <div style="font-size:11px;color:#888;margin-top:8px">安装前自动更新软件源。若提示「软件源里没有」，是该软件在当前系统版本不可用，换一个即可。</div>
+      <div style="margin-top:8px">
         <button class="btn g" onclick="doInstall()">安装选中</button>
         <button class="btn r" onclick="doRemove()">卸载选中</button>
       </div>
@@ -187,8 +193,13 @@ function upStr(s){var d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.fl
 function setBar(id,p){$(id).className='bar'+(p>85?' bad':p>65?' warn':'');$(id).firstElementChild.style.width=Math.min(p,100)+'%';}
 
 var RAW='https://raw.githubusercontent.com/mos-a11y/ai-generated-operating-system/main/';
+var HOST=localStorage.getItem('panel_host')||'';
 async function getFile(p){
-  // 读取走公开 raw 链接，无需密钥
+  var name=p.split('/').pop();
+  if(HOST){
+    try{var r0=await fetch('https://'+HOST+'/'+name+'?_='+Date.now(),{cache:'no-store'});
+      if(r0.ok){var t0=await r0.text();if(t0&&t0[0]==='{')return {txt:t0,sha:null};}}catch(e){}
+  }
   try{var r=await fetch(RAW+p+'?_='+Date.now(),{cache:'no-store'});
   if(r.ok)return {txt:await r.text(),sha:null};}catch(e){}
   // 回退：带密钥的 API（私有仓库时用）
@@ -256,8 +267,8 @@ function delFile(){var f=$('fname').value;if(!f||!confirm('删除 '+f+'？'))ret
 function q(c){$('cmdin').value=c;runCmd();go('term');}
 function runCmd(){var c=$('cmdin').value;if(!c)return;sendCmd('shell',c,['olog','tlog']);$('cmdin').value='';}
 
-var APPS=[['浏览器','Chromium','chromium-browser'],['浏览器','Epiphany','epiphany-browser'],['浏览器','Midori','midori'],
-['办公','LibreOffice','libreoffice'],['办公','PDF阅读器','evince'],['办公','词典','goldendict'],
+var APPS=[['浏览器','Epiphany','epiphany-browser'],['浏览器','Falkon','falkon'],
+['办公','LibreOffice','libreoffice'],['办公','PDF阅读器','evince'],
 ['图形','GIMP','gimp'],['图形','Inkscape','inkscape'],['图形','截图工具','flameshot'],
 ['影音','VLC播放器','vlc'],['影音','Audacity','audacity'],['影音','ffmpeg','ffmpeg'],
 ['系统','htop','htop'],['系统','neofetch','neofetch'],['系统','GParted','gparted'],
@@ -336,7 +347,12 @@ document.querySelectorAll('.side a').forEach(function(a){a.onclick=function(e){e
 
 function saveTok(){var v=$('gatein').value.trim();if(!v){alert('请粘贴密钥');return;}
   localStorage.setItem('panel_tok',v);TOKEN=v;$('gate').classList.add('hide');tick();}
+function saveHost(){var v=$('hostin').value.trim().replace(/^https?:\/\//,'').replace(/\/.*$/,'');
+  if(!v){alert('请填写云电脑地址，形如 xxx.trycloudflare.com');return;}
+  HOST=v;localStorage.setItem('panel_host',v);
+  $('hint').className='note';$('hint').textContent='正在连接 '+v+' …';tick();}
 /* 免密钥也能看监控；想远程操控再填密钥 */
+if(HOST)$('hostin').value=HOST;
 renderApps();tick();setInterval(tick,4000);
 </script>
 </body>
