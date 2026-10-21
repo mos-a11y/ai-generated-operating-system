@@ -1,42 +1,39 @@
 panel_local=200
 == cf3 ==
-2026-10-21T05:32:09Z INF |  Cloudflare API    api.cloudflare.com:443     PASS    API is reachable              |
-2026-10-21T05:32:09Z INF |                                                                                     |
-2026-10-21T05:32:09Z INF |  SUMMARY: Environment is healthy. cloudflared will use 'quic' as primary protocol.  |
-2026-10-21T05:32:09Z INF +-------------------------------------------------------------------------------------+
-2026-10-21T05:32:09Z INF precheck component="DNS Resolution" details="DNS Resolved successfully" run_id=7d9ed24a-aef6-4f84-9438-1c701b8d0d9d status=pass target=region1.v2.argotunnel.com
-2026-10-21T05:32:09Z INF precheck component="DNS Resolution" details="DNS Resolved successfully" run_id=7d9ed24a-aef6-4f84-9438-1c701b8d0d9d status=pass target=region2.v2.argotunnel.com
-2026-10-21T05:32:09Z INF precheck component="UDP Connectivity" details="QUIC connection successful" run_id=7d9ed24a-aef6-4f84-9438-1c701b8d0d9d status=pass target=region1.v2.argotunnel.com
-2026-10-21T05:32:09Z INF precheck component="UDP Connectivity" details="QUIC connection successful" run_id=7d9ed24a-aef6-4f84-9438-1c701b8d0d9d status=pass target=region2.v2.argotunnel.com
-2026-10-21T05:32:09Z INF precheck component="TCP Connectivity" details="HTTP/2 connection successful" run_id=7d9ed24a-aef6-4f84-9438-1c701b8d0d9d status=pass target=region1.v2.argotunnel.com
-2026-10-21T05:32:09Z INF precheck component="TCP Connectivity" details="HTTP/2 connection successful" run_id=7d9ed24a-aef6-4f84-9438-1c701b8d0d9d status=pass target=region2.v2.argotunnel.com
-2026-10-21T05:32:09Z INF precheck component="Cloudflare API" details="API is reachable" run_id=7d9ed24a-aef6-4f84-9438-1c701b8d0d9d status=pass target=api.cloudflare.com:443
-2026-10-21T05:32:09Z INF precheck complete hard_fail=false run_id=7d9ed24a-aef6-4f84-9438-1c701b8d0d9d suggested_protocol=quic
+2026-10-21T05:38:14Z INF |  Cloudflare API    api.cloudflare.com:443     PASS    API is reachable              |
+2026-10-21T05:38:14Z INF |                                                                                     |
+2026-10-21T05:38:14Z INF |  SUMMARY: Environment is healthy. cloudflared will use 'quic' as primary protocol.  |
+2026-10-21T05:38:14Z INF +-------------------------------------------------------------------------------------+
+2026-10-21T05:38:14Z INF precheck component="DNS Resolution" details="DNS Resolved successfully" run_id=5b3e798d-81ed-4543-8c54-a060530efb81 status=pass target=region1.v2.argotunnel.com
+2026-10-21T05:38:14Z INF precheck component="DNS Resolution" details="DNS Resolved successfully" run_id=5b3e798d-81ed-4543-8c54-a060530efb81 status=pass target=region2.v2.argotunnel.com
+2026-10-21T05:38:14Z INF precheck component="UDP Connectivity" details="QUIC connection successful" run_id=5b3e798d-81ed-4543-8c54-a060530efb81 status=pass target=region1.v2.argotunnel.com
+2026-10-21T05:38:14Z INF precheck component="UDP Connectivity" details="QUIC connection successful" run_id=5b3e798d-81ed-4543-8c54-a060530efb81 status=pass target=region2.v2.argotunnel.com
+2026-10-21T05:38:14Z INF precheck component="TCP Connectivity" details="HTTP/2 connection successful" run_id=5b3e798d-81ed-4543-8c54-a060530efb81 status=pass target=region1.v2.argotunnel.com
+2026-10-21T05:38:14Z INF precheck component="TCP Connectivity" details="HTTP/2 connection successful" run_id=5b3e798d-81ed-4543-8c54-a060530efb81 status=pass target=region2.v2.argotunnel.com
+2026-10-21T05:38:14Z INF precheck component="Cloudflare API" details="API is reachable" run_id=5b3e798d-81ed-4543-8c54-a060530efb81 status=pass target=api.cloudflare.com:443
+2026-10-21T05:38:14Z INF precheck complete hard_fail=false run_id=5b3e798d-81ed-4543-8c54-a060530efb81 suggested_protocol=quic
 == pg3 ==
 Pseudo-terminal will not be allocated because stdin is not a terminal.
-Warning: Permanently added '[a.pinggy.io]:443' (RSA) to the list of known hosts.
-Allocated port 7 for remote forward to localhost:8899
+Allocated port 3 for remote forward to localhost:8899
 You are not authenticated.
 Your tunnel will expire in 60 minutes. Upgrade to Pinggy Pro to get unrestricted tunnels. https://dashboard.pinggy.io
-https://cjakc-20-80-86-198.run.pinggy-free.link
-https://qnbil-20-80-86-198.free.pinggy.net
+https://ipxei-20-80-86-198.free.pinggy.net
+https://jajto-20-80-86-198.run.pinggy-free.link
 == lr2 ==
-[7m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[7m  [0m[49m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m
-[7m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m
-[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m
-[7m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[7m  [0m[7m  [0m
-[7m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[7m  [0m
-[7m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[7m  [0m[7m  [0m
-[7m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[7m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m
-[7m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[7m  [0m
-[7m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[49m  [0m[49m  [0m[7m  [0m[7m  [0m
-[7m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m
+[7m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m
+[7m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m
+[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m
+[7m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m
+[7m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[49m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m
+[7m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m
+[7m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[7m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m
+[7m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m
+[7m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m
+[7m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[49m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m[49m  [0m[7m  [0m
 [7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m[7m  [0m
 
 == sv3 ==
 Pseudo-terminal will not be allocated because stdin is not a terminal.
-Warning: Permanently added 'serveo.net' (ED25519) to the list of known hosts.
-[32mForwarding HTTP traffic from https://cb008d1ae923226c-20-80-86-198.serveousercontent.com
-[0m[33mTip (1): Add your SSH key to reserve names and keep URLs stable. Pro removes the browser warning page: https://console.serveo.net/settings?n=1&src=ssh_nudge&v=A
+[32mForwarding HTTP traffic from https://d7e80682389e6c72-20-80-86-198.serveousercontent.com
 [0m== panel.log ==
 云面板 started on 8899
