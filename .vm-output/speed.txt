@@ -1,1 +1,1 @@
-cloudflared 0.160227 https://soccer-weighted-founded-secrets.trycloudflare.com
+cloudflared 0.096342 https://soccer-weighted-founded-secrets.trycloudflare.com
